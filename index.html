@@ -176,21 +176,41 @@
       text-align: center;
     }
 
+    /* ↕️↔️ 横スクロール設定の強化 */
     .tab-grid-wrapper {
       overflow-x: auto;
+      overflow-y: hidden;
       padding-bottom: 8px;
+      margin-bottom: 6px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--primary-color) #222;
     }
+    .tab-grid-wrapper::-webkit-scrollbar {
+      height: 8px;
+    }
+    .tab-grid-wrapper::-webkit-scrollbar-track {
+      background: #181818;
+      border-radius: 4px;
+    }
+    .tab-grid-wrapper::-webkit-scrollbar-thumb {
+      background: var(--primary-color);
+      border-radius: 4px;
+    }
+
     .tab-table {
       border-collapse: collapse;
       font-family: 'Courier New', Courier, monospace;
-      width: 100%;
-      min-width: 580px;
+      width: max-content;
+      min-width: 100%;
     }
     .tab-table th, .tab-table td {
       border: 1px solid #444;
       text-align: center;
       padding: 2px;
-      min-width: 38px;
+      width: 54px;
+      min-width: 54px;
+      max-width: 54px;
+      box-sizing: border-box;
       position: relative;
     }
     .tab-table th { background-color: #1a1a1a; color: var(--accent-color); font-size: 0.8rem; }
@@ -199,7 +219,9 @@
       white-space: nowrap;
       padding: 2px 4px !important;
       background: #181818;
-      width: 90px;
+      width: 90px !important;
+      min-width: 90px !important;
+      max-width: 90px !important;
     }
     .string-select {
       background: #111;
@@ -231,7 +253,7 @@
       color: #fff;
       text-align: center;
       font-family: monospace;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       font-weight: bold;
       box-sizing: border-box;
       user-select: text;
@@ -393,6 +415,7 @@
     </div>
   </div>
 </div>
+
 <script>
 const GAS_API_URL = "https://script.google.com/macros/s/AKfycby_ryGNAlu3Z8K_5Qd2IDWNQmnEst0zDvEVCcu2ybQB-Fxbz3pOo690gK-kdCEzzwRt/exec";
 const GITHUB_USER = "yunio-omaru";
@@ -727,7 +750,6 @@ function renderSectionUI(sec) {
   card.className = "section-card";
   card.dataset.sectionId = secId;
 
-  // 既存データから最大ステップ数を取得（初期値8列）
   let totalSteps = 8;
   if (sec.chords && sec.chords.length > totalSteps) {
     totalSteps = sec.chords.length;
@@ -759,11 +781,11 @@ function renderSectionUI(sec) {
       <button type="button" class="btn-danger btn-sm" onclick="removeSection('${secId}')">セクション削除</button>
     </div>
 
-    <div class="tab-grid-wrapper" style="margin-bottom:10px;">
+    <div class="tab-grid-wrapper">
       <table class="tab-table">
         <thead>
           <tr class="chord-header-row">
-            <th style="width:90px;">
+            <th class="string-control-td">
               Chord
               <br><button type="button" class="btn-auto-chord" onclick="detectAndSetChords('${secId}')" title="Key判別＆Tabからコードを自動入力">🪄 自動判定</button>
             </th>
@@ -879,9 +901,6 @@ function createStringRowHtml(sIdx, stringNote, part, prevPart, totalSteps = 8) {
   `;
 }
 
-/**
- * 🚀 最後の列（コード/Tab）に入力された時に自動で1列追加する処理
- */
 function checkAndExpandColumns(inputEl) {
   const sCard = inputEl.closest('.section-card');
   if (!sCard) return;
@@ -918,9 +937,6 @@ function expandSectionStep(sCard, newStepIdx) {
   }
 }
 
-/**
- * 🎵 Capo設定に応じたフレット番号自動補正機能（1以上のフレット入力時のみカッコ付与）
- */
 function formatCapoInput(inputEl) {
   const rawVal = inputEl.value.trim();
   const capoVal = parseInt(document.getElementById('song-capo').value || "0", 10);
@@ -1043,26 +1059,26 @@ function analyzeAdvancedChordWithKey(notes, bassNote, keyRoot) {
   if (notes.length === 1) return notes[0];
 
   const chordPatterns = [
-    { suffix: "", intervals: [4, 7] },            // Major
-    { suffix: "m", intervals: [3, 7] },           // Minor
-    { suffix: "add9", intervals: [2, 4, 7] },     // Add 9
-    { suffix: "sus4", intervals: [5, 7] },        // Sus4
-    { suffix: "sus2", intervals: [2, 7] },        // Sus2
-    { suffix: "7", intervals: [4, 7, 10] },       // Dominant 7th
-    { suffix: "maj7", intervals: [4, 7, 11] },    // Major 7th
-    { suffix: "m7", intervals: [3, 7, 10] },      // Minor 7th
-    { suffix: "mM7", intervals: [3, 7, 11] },     // Minor Major 7th
-    { suffix: "9", intervals: [2, 4, 7, 10] },    // Dominant 9th
-    { suffix: "maj9", intervals: [2, 4, 7, 11] }, // Major 9th
-    { suffix: "m9", intervals: [2, 3, 7, 10] },   // Minor 9th
-    { suffix: "7sus4", intervals: [5, 7, 10] },   // 7sus4
-    { suffix: "dim", intervals: [3, 6] },         // Diminished
-    { suffix: "dim7", intervals: [3, 6, 9] },     // Diminished 7th
-    { suffix: "m7(b5)", intervals: [3, 6, 10] }, // Half Diminished
-    { suffix: "aug", intervals: [4, 8] },         // Augmented
-    { suffix: "6", intervals: [4, 7, 9] },        // Major 6th
-    { suffix: "m6", intervals: [3, 7, 9] },       // Minor 6th
-    { suffix: "5", intervals: [7] }               // Power Chord
+    { suffix: "", intervals: [4, 7] },
+    { suffix: "m", intervals: [3, 7] },
+    { suffix: "add9", intervals: [2, 4, 7] },
+    { suffix: "sus4", intervals: [5, 7] },
+    { suffix: "sus2", intervals: [2, 7] },
+    { suffix: "7", intervals: [4, 7, 10] },
+    { suffix: "maj7", intervals: [4, 7, 11] },
+    { suffix: "m7", intervals: [3, 7, 10] },
+    { suffix: "mM7", intervals: [3, 7, 11] },
+    { suffix: "9", intervals: [2, 4, 7, 10] },
+    { suffix: "maj9", intervals: [2, 4, 7, 11] },
+    { suffix: "m9", intervals: [2, 3, 7, 10] },
+    { suffix: "7sus4", intervals: [5, 7, 10] },
+    { suffix: "dim", intervals: [3, 6] },
+    { suffix: "dim7", intervals: [3, 6, 9] },
+    { suffix: "m7(b5)", intervals: [3, 6, 10] },
+    { suffix: "aug", intervals: [4, 8] },
+    { suffix: "6", intervals: [4, 7, 9] },
+    { suffix: "m6", intervals: [3, 7, 9] },
+    { suffix: "5", intervals: [7] }
   ];
 
   let candidateChords = [];
