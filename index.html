@@ -28,7 +28,7 @@
       user-select: none;
     }
     .container {
-      max-width: 750px;
+      max-width: 800px;
       margin: 0 auto;
       padding: 12px;
       box-sizing: border-box;
@@ -393,7 +393,6 @@
     </div>
   </div>
 </div>
-
 <script>
 const GAS_API_URL = "https://script.google.com/macros/s/AKfycby_ryGNAlu3Z8K_5Qd2IDWNQmnEst0zDvEVCcu2ybQB-Fxbz3pOo690gK-kdCEzzwRt/exec";
 const GITHUB_USER = "yunio-omaru";
@@ -475,10 +474,6 @@ async function executeSave() {
     saveBtn.innerText = "💾 保存";
   }
 }
-
-/* =========================================================
-   🐙 GitHub API 直接自動保存機能
-   ========================================================= */
 
 function openGitHubSettings() {
   document.getElementById('github-modal').style.display = 'flex';
@@ -613,9 +608,9 @@ function collectFormData() {
         tuning.push(stringSelect ? stringSelect.value : "E");
 
         grid[rIdx] = [];
-        for (let step = 0; step < 8; step++) {
-          const input = row.querySelector(`.tab-input[data-step="${step}"]`);
-          grid[rIdx].push(input ? input.value : "-");
+        const inputs = row.querySelectorAll('.tab-input');
+        for (let step = 0; step < inputs.length; step++) {
+          grid[rIdx].push(inputs[step] ? inputs[step].value : "-");
         }
       }
 
@@ -732,10 +727,27 @@ function renderSectionUI(sec) {
   card.className = "section-card";
   card.dataset.sectionId = secId;
 
+  // 既存データから最大ステップ数を取得（初期値8列）
+  let totalSteps = 8;
+  if (sec.chords && sec.chords.length > totalSteps) {
+    totalSteps = sec.chords.length;
+  }
+  if (sec.parts) {
+    for (const p of sec.parts) {
+      if (p.grid) {
+        for (const k in p.grid) {
+          if (Array.isArray(p.grid[k]) && p.grid[k].length > totalSteps) {
+            totalSteps = p.grid[k].length;
+          }
+        }
+      }
+    }
+  }
+
   let chordThs = "";
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < totalSteps; i++) {
     const val = (sec.chords && sec.chords[i]) ? sec.chords[i] : "";
-    chordThs += `<th><input type="text" class="tab-input chord-input" placeholder="コード" value="${val}"></th>`;
+    chordThs += `<th><input type="text" class="tab-input chord-input" data-step="${i}" placeholder="コード" value="${val}" oninput="checkAndExpandColumns(this)"></th>`;
   }
 
   card.innerHTML = `
@@ -750,7 +762,7 @@ function renderSectionUI(sec) {
     <div class="tab-grid-wrapper" style="margin-bottom:10px;">
       <table class="tab-table">
         <thead>
-          <tr>
+          <tr class="chord-header-row">
             <th style="width:90px;">
               Chord
               <br><button type="button" class="btn-auto-chord" onclick="detectAndSetChords('${secId}')" title="Key判別＆Tabからコードを自動入力">🪄 自動判定</button>
@@ -781,7 +793,7 @@ function renderSectionUI(sec) {
   
   for (let pIdx = 0; pIdx < parts.length; pIdx++) {
     const prevPart = (pIdx > 0) ? parts[pIdx - 1] : null;
-    renderPartUI(partsContainer, parts[pIdx], prevPart);
+    renderPartUI(partsContainer, parts[pIdx], prevPart, totalSteps);
   }
 }
 
@@ -798,7 +810,7 @@ function createNoteOptionsHtml(selectedNote) {
   return html;
 }
 
-function renderPartUI(partsContainer, part, prevPart = null) {
+function renderPartUI(partsContainer, part, prevPart = null, totalSteps = 8) {
   const partId = part.id || "part_" + Date.now() + "_" + Math.random().toString(36).substr(2, 4);
   const partCard = document.createElement('div');
   partCard.className = "part-card";
@@ -808,7 +820,7 @@ function renderPartUI(partsContainer, part, prevPart = null) {
 
   let tabRowsHtml = "";
   for (let sIdx = 0; sIdx < tuning.length; sIdx++) {
-    tabRowsHtml += createStringRowHtml(sIdx, tuning[sIdx], part, prevPart);
+    tabRowsHtml += createStringRowHtml(sIdx, tuning[sIdx], part, prevPart, totalSteps);
   }
 
   partCard.innerHTML = `
@@ -832,9 +844,9 @@ function renderPartUI(partsContainer, part, prevPart = null) {
   partsContainer.appendChild(partCard);
 }
 
-function createStringRowHtml(sIdx, stringNote, part, prevPart) {
+function createStringRowHtml(sIdx, stringNote, part, prevPart, totalSteps = 8) {
   let tds = "";
-  for (let step = 0; step < 8; step++) {
+  for (let step = 0; step < totalSteps; step++) {
     const val = (part && part.grid && part.grid[sIdx] && part.grid[sIdx][step]) ? part.grid[sIdx][step] : "-";
     
     let ghostVal = "";
@@ -847,7 +859,7 @@ function createStringRowHtml(sIdx, stringNote, part, prevPart) {
       <td class="tab-cell">
         <div class="tab-input-wrapper">
           <div class="tab-ghost">${ghostVal}</div>
-          <input type="text" class="tab-input" data-step="${step}" value="${val}" oninput="updateGhostGuide(this)">
+          <input type="text" class="tab-input" data-step="${step}" value="${val}" onchange="formatCapoInput(this)" oninput="updateGhostGuide(this); checkAndExpandColumns(this);">
         </div>
       </td>
     `;
@@ -865,6 +877,62 @@ function createStringRowHtml(sIdx, stringNote, part, prevPart) {
       ${tds}
     </tr>
   `;
+}
+
+/**
+ * 🚀 最後の列（コード/Tab）に入力された時に自動で1列追加する処理
+ */
+function checkAndExpandColumns(inputEl) {
+  const sCard = inputEl.closest('.section-card');
+  if (!sCard) return;
+
+  const step = parseInt(inputEl.dataset.step, 10);
+  const chordRow = sCard.querySelector('.chord-header-row');
+  const currentTotalSteps = chordRow.querySelectorAll('th').length - 1;
+
+  if (step === currentTotalSteps - 1 && inputEl.value.trim() !== "" && inputEl.value.trim() !== "-") {
+    expandSectionStep(sCard, currentTotalSteps);
+  }
+}
+
+function expandSectionStep(sCard, newStepIdx) {
+  const chordRow = sCard.querySelector('.chord-header-row');
+  const th = document.createElement('th');
+  th.innerHTML = `<input type="text" class="tab-input chord-input" data-step="${newStepIdx}" placeholder="コード" value="" oninput="checkAndExpandColumns(this)">`;
+  chordRow.appendChild(th);
+
+  const partCards = sCard.querySelectorAll('.part-card');
+  for (const pCard of partCards) {
+    const rows = pCard.querySelectorAll('tbody tr');
+    for (const tr of rows) {
+      const td = document.createElement('td');
+      td.className = "tab-cell";
+      td.innerHTML = `
+        <div class="tab-input-wrapper">
+          <div class="tab-ghost"></div>
+          <input type="text" class="tab-input" data-step="${newStepIdx}" value="-" onchange="formatCapoInput(this)" oninput="updateGhostGuide(this); checkAndExpandColumns(this);">
+        </div>
+      `;
+      tr.appendChild(td);
+    }
+  }
+}
+
+/**
+ * 🎵 Capo設定に応じたフレット番号自動補正機能（1以上のフレット入力時のみカッコ付与）
+ */
+function formatCapoInput(inputEl) {
+  const rawVal = inputEl.value.trim();
+  const capoVal = parseInt(document.getElementById('song-capo').value || "0", 10);
+
+  if (capoVal <= 0 || !rawVal || rawVal === "-") return;
+  if (/\d+\(\d+\)/.test(rawVal)) return;
+
+  const fretNum = parseInt(rawVal, 10);
+  if (!isNaN(fretNum) && fretNum > 0) {
+    const actualFret = fretNum + capoVal;
+    inputEl.value = `${fretNum}(${actualFret})`;
+  }
 }
 
 function detectSectionKey(sCard, capoVal) {
@@ -925,8 +993,9 @@ function detectAndSetChords(secId) {
 
   const partCards = sCard.querySelectorAll('.part-card');
   const chordInputs = sCard.querySelectorAll('.chord-input');
+  const totalSteps = chordInputs.length;
 
-  for (let step = 0; step < 8; step++) {
+  for (let step = 0; step < totalSteps; step++) {
     const pitchSet = new Set();
     let lowestPitchVal = 999;
     let bassNoteName = "";
@@ -1172,7 +1241,9 @@ function pasteClipboardToSelection() {
         const inp = td.querySelector('.tab-input');
         if (inp) {
           inp.value = rowData[c];
+          formatCapoInput(inp);
           updateGhostGuide(inp);
+          checkAndExpandColumns(inp);
         }
       }
     }
@@ -1181,6 +1252,9 @@ function pasteClipboardToSelection() {
 
 function addPartToSection(secId) {
   const sCard = document.querySelector(`.section-card[data-section-id="${secId}"]`);
+  const chordRow = sCard.querySelector('.chord-header-row');
+  const totalSteps = chordRow.querySelectorAll('th').length - 1;
+
   const partsContainer = sCard.querySelector('.parts-container');
   const existingParts = partsContainer.querySelectorAll('.part-card');
   const partCount = existingParts.length + 1;
@@ -1207,16 +1281,20 @@ function addPartToSection(secId) {
     }
   }
 
-  renderPartUI(partsContainer, newPart, prevPartData);
+  renderPartUI(partsContainer, newPart, prevPartData, totalSteps);
 }
 
 function insertStringRow(btnEl) {
   const tr = btnEl.closest('tr');
+  const sCard = btnEl.closest('.section-card');
+  const chordRow = sCard.querySelector('.chord-header-row');
+  const totalSteps = chordRow.querySelectorAll('th').length - 1;
+
   const action = prompt("弦の挿入位置を選んでください:\n 1 : この弦の上に追加\n 2 : この弦の下に追加", "2");
 
   if (action === "1" || action === "2") {
     const newTr = document.createElement('tr');
-    newTr.innerHTML = createStringRowHtml(0, "E", null, null);
+    newTr.innerHTML = createStringRowHtml(0, "E", null, null, totalSteps);
     
     if (action === "1") {
       tr.parentNode.insertBefore(newTr, tr);
@@ -1228,9 +1306,13 @@ function insertStringRow(btnEl) {
 
 function appendStringBottom(partId) {
   const pCard = document.querySelector(`.part-card[data-part-id="${partId}"]`);
+  const sCard = pCard.closest('.section-card');
+  const chordRow = sCard.querySelector('.chord-header-row');
+  const totalSteps = chordRow.querySelectorAll('th').length - 1;
+
   const tbody = pCard.querySelector('tbody');
   const newTr = document.createElement('tr');
-  newTr.innerHTML = createStringRowHtml(0, "E", null, null);
+  newTr.innerHTML = createStringRowHtml(0, "E", null, null, totalSteps);
   tbody.appendChild(newTr);
 }
 
@@ -1281,7 +1363,7 @@ function generateAsciiTab() {
 
     if (sec.chords && sec.chords.some(c => c !== "")) {
       ascii += `Chord: |`;
-      for (let i = 0; i < 8; i++) {
+      for (let i = 0; i < sec.chords.length; i++) {
         ascii += ` ${(sec.chords[i] || '').padEnd(4, ' ')}|`;
       }
       ascii += `\n`;
@@ -1292,7 +1374,8 @@ function generateAsciiTab() {
       const tuning = part.tuning || DEFAULT_TUNING;
       for (let sIdx = 0; sIdx < tuning.length; sIdx++) {
         let line = `${(tuning[sIdx] || 'E').padEnd(2, ' ')}|`;
-        for (let step = 0; step < 8; step++) {
+        const colCount = (part.grid[sIdx]) ? part.grid[sIdx].length : 8;
+        for (let step = 0; step < colCount; step++) {
           let val = (part.grid[sIdx] && part.grid[sIdx][step]) ? part.grid[sIdx][step] : "-";
           if (val === "") val = "-";
           line += `-${val.toString().padEnd(3, '-')}`;
