@@ -204,24 +204,28 @@
       min-width: 100%;
     }
     
-    /* 🎸 コード用のヘッダーセル（文字に合わせて伸縮） */
+    /* 🎸 コード用のヘッダーセル（ゆったり長めの80px幅固定） */
     .tab-table th.chord-th {
       background-color: #1a1a1a;
       color: var(--accent-color);
-      font-size: 0.78rem;
+      font-size: 0.8rem;
       border: 1px solid #444;
       text-align: center;
-      padding: 2px 2px;
+      padding: 2px 0;
+      width: 80px !important;
+      min-width: 80px !important;
+      max-width: 80px !important;
       box-sizing: border-box;
-      white-space: nowrap;
     }
 
-    /* 🎵 Tab用のボディセル（15(15)に最適な42pxコンパクト幅） */
+    /* 🎵 Tab用のボディセル（コンパクトな42px幅固定） */
     .tab-table td.tab-cell {
       border: 1px solid #444;
       text-align: center;
       padding: 0;
-      min-width: 42px;
+      width: 42px !important;
+      min-width: 42px !important;
+      max-width: 42px !important;
       box-sizing: border-box;
       position: relative;
     }
@@ -232,6 +236,7 @@
       background: #181818;
       width: 90px !important;
       min-width: 90px !important;
+      max-width: 90px !important;
     }
     .string-select {
       background: #111;
@@ -258,7 +263,7 @@
       top: 0; left: 0; right: 0; bottom: 0;
       display: flex; align-items: center; justify-content: center;
       color: rgba(255, 255, 255, 0.25);
-      font-size: 0.78rem;
+      font-size: 0.8rem;
       pointer-events: none;
       font-weight: bold;
     }
@@ -270,18 +275,16 @@
       color: #fff;
       text-align: center;
       font-family: monospace;
-      font-size: 0.78rem;
+      font-size: 0.8rem;
       font-weight: bold;
       box-sizing: border-box;
       user-select: text;
-      padding: 0 1px;
+      padding: 0;
     }
     
-    /* 🎸 コード入力欄（文字数で動的横伸ばし） */
+    /* 🎸 コード入力欄専用 */
     .chord-input {
-      font-size: 0.78rem;
-      padding: 2px 4px;
-      box-sizing: content-box;
+      font-size: 0.8rem;
     }
 
     td.selected-cell {
@@ -794,7 +797,7 @@ function renderSectionUI(sec) {
   let chordThs = "";
   for (let i = 0; i < totalSteps; i++) {
     const val = (sec.chords && sec.chords[i]) ? sec.chords[i] : "";
-    chordThs += `<th class="chord-th"><input type="text" class="tab-input chord-input" data-step="${i}" placeholder="コード" value="${val}" oninput="adjustInputWidth(this); checkAndExpandColumns(this)"></th>`;
+    chordThs += `<th class="chord-th"><input type="text" class="tab-input chord-input" data-step="${i}" placeholder="コード" value="${val}" oninput="checkAndExpandColumns(this)"></th>`;
   }
 
   card.innerHTML = `
@@ -833,11 +836,6 @@ function renderSectionUI(sec) {
   `;
 
   secContainer.appendChild(card);
-
-  // 初期読み込み時のコード枠幅調整
-  setTimeout(() => {
-    card.querySelectorAll('.chord-input').forEach(inp => adjustInputWidth(inp));
-  }, 0);
 
   const partsContainer = card.querySelector('.parts-container');
   const currentTuning = getLastUsedTuning();
@@ -931,15 +929,6 @@ function createStringRowHtml(sIdx, stringNote, part, prevPart, totalSteps = 8) {
   `;
 }
 
-/* 🔍 コード入力欄の文字数ピクセル動的幅変更 */
-function adjustInputWidth(inputEl) {
-  const val = inputEl.value.trim();
-  const charLen = val ? val.length : 3;
-  // 文字数に応じた幅計算（最小 42px）
-  const calcWidth = Math.max(42, charLen * 9 + 12);
-  inputEl.style.width = calcWidth + 'px';
-}
-
 function checkAndExpandColumns(inputEl) {
   const sCard = inputEl.closest('.section-card');
   if (!sCard) return;
@@ -957,7 +946,7 @@ function expandSectionStep(sCard, newStepIdx) {
   const chordRow = sCard.querySelector('.chord-header-row');
   const th = document.createElement('th');
   th.className = "chord-th";
-  th.innerHTML = `<input type="text" class="tab-input chord-input" data-step="${newStepIdx}" placeholder="コード" value="" oninput="adjustInputWidth(this); checkAndExpandColumns(this)">`;
+  th.innerHTML = `<input type="text" class="tab-input chord-input" data-step="${newStepIdx}" placeholder="コード" value="" oninput="checkAndExpandColumns(this)">`;
   chordRow.appendChild(th);
 
   const partCards = sCard.querySelectorAll('.part-card');
@@ -975,9 +964,6 @@ function expandSectionStep(sCard, newStepIdx) {
       tr.appendChild(td);
     }
   }
-
-  const newInp = th.querySelector('.chord-input');
-  if (newInp) adjustInputWidth(newInp);
 }
 
 function formatCapoInput(inputEl) {
@@ -1092,7 +1078,6 @@ function detectAndSetChords(secId) {
       const detectedChord = analyzeAdvancedChordWithKey(Array.from(pitchSet), bassNoteName, estimatedKey);
       if (chordInputs[step]) {
         chordInputs[step].value = detectedChord;
-        adjustInputWidth(chordInputs[step]);
       }
     }
   }
@@ -1304,9 +1289,6 @@ function pasteClipboardToSelection() {
           formatCapoInput(inp);
           updateGhostGuide(inp);
           checkAndExpandColumns(inp);
-          if (inp.classList.contains('chord-input')) {
-            adjustInputWidth(inp);
-          }
         }
       }
     }
