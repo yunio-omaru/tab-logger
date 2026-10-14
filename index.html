@@ -176,7 +176,7 @@
       text-align: center;
     }
 
-    /* ↕️↔️ v5基準の標準スクロール設定 */
+    /* ↕️↔️ 横スクロール設定 */
     .tab-grid-wrapper {
       overflow-x: auto;
       overflow-y: hidden;
@@ -197,7 +197,7 @@
       border-radius: 4px;
     }
 
-    /* 🏛️ v5スタイルの共通テーブル仕様 */
+    /* 🏛️ テーブル基本構造 */
     .tab-table {
       border-collapse: collapse;
       font-family: 'Courier New', Courier, monospace;
@@ -860,6 +860,7 @@ function renderPartUI(partsContainer, part, prevPart = null, totalSteps = 8) {
       <button type="button" class="btn-danger btn-sm" onclick="this.closest('.part-card').remove()">パート削除</button>
     </div>
 
+    <!-- 🔍 横スクロール用ラッパーを正しく再適用 -->
     <div class="tab-grid-wrapper">
       <table class="tab-table">
         <tbody>
