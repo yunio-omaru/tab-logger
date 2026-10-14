@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tab譜 ＆ コードワーク ログエディタ</title>
+  <style>
+    :root {
+      --primary-color: #4a90e2;
+      --bg-color: #121212;
+      --card-bg: #1e1e1e;
+      --card-inner-bg: #2a2a2a;
+      --text-color: #f0f0f0;
+      --text-muted: #aaaaaa;
+      --accent-color: #f39c12;
+      --fret-color: #e74c3c;
+      --border-color: #3e3e3e;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 0;
+      padding-bottom: 40px;
+    }
+    .container {
+      max-width: 650px;
+      margin: 0 auto;
+      padding: 12px;
+      box-sizing: border-box;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--card-bg);
+      padding: 12px 16px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      margin-bottom: 12px;
+      border: 1px solid var(--border-color);
+    }
+    button {
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-weight: bold;
+      transition: opacity 0.2s;
+    }
+    button:hover { opacity: 0.9; }
+    button:active { opacity: 0.7; }
+    .btn-sync { background-color: #27ae60; color: white; }
+    .btn-secondary { background-color: #333; color: #fff; border: 1px solid var(--border-color); }
+    .btn-add { background-color: var(--primary-color); color: white; margin-top: 8px; }
+    .btn-danger { background-color: #c0392b; color: white; padding: 4px 8px; font-size: 0.8rem; }
+    .sync-status-bar {
+      font-size: 0.8rem;
+      font-weight: bold;
+      color: #2ecc71;
+      background: #1b382b;
+      padding: 8px 12px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      text-align: center;
+      border: 1px solid #27ae60;
+    }
+    .page { display: none; }
+    .page.active { display: block; }
+    
+    .app-content {
+      background: var(--card-bg);
+      padding: 16px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+      border: 1px solid var(--border-color);
+    }
+    
+    /* フォーム要素のスタイル */
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; }
+    input[type="text"], input[type="number"], select, textarea {
+      width: 100%;
+      padding: 10px;
+      box-sizing: border-box;
+      background-color: var(--card-inner-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+      border-radius: 6px;
+      font-size: 0.95rem;
+    }
+    .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .grid-3col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
+    /* Tab譜エディタ表示部分 */
+    .section-card {
+      background: var(--card-inner-bg);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border-color);
+    }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .tab-grid-wrapper {
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+    .tab-table {
+      border-collapse: collapse;
+      font-family: 'Courier New', Courier, monospace;
+      width: 100%;
+      min-width: 480px;
+    }
+    .tab-table th, .tab-table td {
+      border: 1px solid #444;
+      text-align: center;
+      padding: 4px 2px;
+      min-width: 32px;
+    }
+    .tab-table th { background-color: #202020; color: var(--accent-color); font-size: 0.8rem; }
+    .string-label { font-weight: bold; color: var(--primary-color); background: #181818; width: 30px; }
+    
+    .tab-input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: #fff;
+      text-align: center;
+      font-family: monospace;
+      font-size: 1.05rem;
+      font-weight: bold;
+      padding: 2px 0;
+    }
+    .tab-input:focus { background-color: #3a3a3a; outline: 1px solid var(--primary-color); }
+    
+    /* テキストプレビューエリア */
+    .ascii-output {
+      font-family: monospace;
+      white-space: pre;
+      background: #000;
+      color: #00ff66;
+      padding: 10px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 0.85rem;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <!-- 🎛️ 同期ステータスバー -->
+  <div id="sync-status" class="sync-status-bar">🔄 接続確認中...</div>
+
+  <!-- メイン画面 -->
+  <div id="page-main" class="page active">
+    <header>
+      <h1 style="font-size: 1.1rem; margin:0;">🎸 Tab & Chord Logger</h1>
+      <!-- ⚙️ onclickによるダイレクト発火 -->
+      <button id="btn-save" class="btn-sync" onclick="executeSave()">💾 保存</button>
+    </header>
+
+    <div class="app-content">
+      <!-- 楽曲の基本情報 -->
+      <div class="form-group">
+        <label for="song-title">🎵 曲名 (Song Title)</label>
+        <input type="text" id="song-title" placeholder="例: My Original Solo">
+      </div>
+
+      <div class="grid-3col form-group">
+        <div>
+          <label for="song-bpm">BPM</label>
+          <input type="number" id="song-bpm" value="120">
+        </div>
+        <div>
+          <label for="song-tuning">チューニング</label>
+          <input type="text" id="song-tuning" value="Standard (EADGBE)">
+        </div>
+        <div>
+          <label for="song-capo">CAPO</label>
+          <input type="number" id="song-capo" value="0">
+        </div>
+      </div>
+
+      <hr style="border: 0.5px solid var(--border-color); margin: 20px 0;">
+
+      <!-- Tab譜セクションエリア -->
+      <div id="sections-container"></div>
+
+      <button type="button" class="btn-add" onclick="addSection()" style="width: 100%; padding: 10px;">
+        ➕ 新しいセクションを追加 (Aメロ / サビ / ソロ等)
+      </button>
+
+      <!-- ASCII出力ボタン -->
+      <div style="margin-top: 25px;">
+        <button type="button" class="btn-secondary" onclick="generateAsciiTab()" style="width: 100%;">
+          📄 テキスト (ASCII Tab) を生成・コピー
+        </button>
+        <div id="ascii-output-container" style="display: none;">
+          <div class="ascii-output" id="ascii-text"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// 🔗 GASのWebアプリURL（設定済み）
+const GAS_API_URL = "https://script.google.com/macros/s/AKfycbx-eCy9s2F7b1ON2MnvMHIMo174bwkP_zzBm0JOcEJGrrR8QcO9UWgw77E1zNM9NYKF/exec";
+
+// 📦 アプリデータを一元管理する変数
+let appData = {
+  logs: {
+    songTitle: "",
+    bpm: 120,
+    tuning: "Standard",
+    capo: 0,
+    sections: []
+  },
+  master: {}
+};
+
+// 弦のリスト (1弦 -> 6弦)
+const STRINGS = ["e", "B", "G", "D", "A", "E"];
+
+// 起動時の初期処理
+document.addEventListener('DOMContentLoaded', () => {
+  loadFromSpreadsheet();
+});
+
+/**
+ * 📥 スプレッドシートからデータを読み込む (GET)
+ */
+async function loadFromSpreadsheet() {
+  const statusLabel = document.getElementById('sync-status');
+  statusLabel.innerText = "🔄 スプレッドシートからデータを同期中...";
+  try {
+    const res = await fetch(GAS_API_URL);
+    if(res.ok) {
+      const data = await res.json();
+      if (data && Object.keys(data).length > 0 && data.logs) {
+        appData = data;
+      }
+      statusLabel.innerText = "✅ 同期完了";
+      renderApp();
+    }
+  } catch(e) {
+    console.error(e);
+    statusLabel.innerText = "❌ 読み込み同期エラー";
+    // データがない場合の初期セクション
+    if(!appData.logs.sections || appData.logs.sections.length === 0) {
+      addSection("Guitar Solo");
+    }
+  }
+}
+
+/**
+ * 💾 保存ボタンが押された時の安全な中継関数
+ */
+async function executeSave() {
+  const saveBtn = document.getElementById('btn-save');
+  saveBtn.disabled = true;
+  saveBtn.innerText = "⏳ 保存中...";
+  try {
+    collectFormData();
+    await saveToSpreadsheet();
+  } catch (e) {
+    console.error(e);
+    alert("保存処理でエラーが発生しました");
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.innerText = "💾 保存";
+  }
+}
+
+/**
+ * 📝 画面の入力値を appData に集約する
+ */
+function collectFormData() {
+  appData.logs.songTitle = document.getElementById('song-title').value;
+  appData.logs.bpm = document.getElementById('song-bpm').value;
+  appData.logs.tuning = document.getElementById('song-tuning').value;
+  appData.logs.capo = document.getElementById('song-capo').value;
+
+  const sectionElements = document.querySelectorAll('.section-card');
+  const sections = [];
+
+  // ループ内でfor...ofを使用（安全基準厳守）
+  for (const sEl of sectionElements) {
+    const sectionId = sEl.dataset.sectionId;
+    const name = sEl.querySelector('.section-name').value;
+    const memo = sEl.querySelector('.section-memo').value;
+    
+    // コードネームの取得
+    const chordInputs = sEl.querySelectorAll('.chord-input');
+    const chords = [];
+    for (const cInput of chordInputs) {
+      chords.push(cInput.value);
+    }
+
+    // Tab譜グリッドデータ（1〜6弦 × 8ステップ）の取得
+    const grid = {};
+    for (let sIdx = 0; sIdx < 6; sIdx++) {
+      grid[sIdx] = [];
+      for (let step = 0; step < 8; step++) {
+        const input = sEl.querySelector(`.tab-input[data-string="${sIdx}"][data-step="${step}"]`);
+        grid[sIdx].push(input ? input.value : "-");
+      }
+    }
+
+    sections.push({
+      id: sectionId,
+      name: name,
+      memo: memo,
+      chords: chords,
+      grid: grid
+    });
+  }
+
+  appData.logs.sections = sections;
+}
+
+/**
+ * 💻 データを画面に描写する
+ */
+function renderApp() {
+  document.getElementById('song-title').value = appData.logs.songTitle || "";
+  document.getElementById('song-bpm').value = appData.logs.bpm || 120;
+  document.getElementById('song-tuning').value = appData.logs.tuning || "Standard (EADGBE)";
+  document.getElementById('song-capo').value = appData.logs.capo || 0;
+
+  const container = document.getElementById('sections-container');
+  container.innerHTML = "";
+
+  const sections = appData.logs.sections || [];
+  
+  if (sections.length === 0) {
+    addSection("メインフレーズ");
+    return;
+  }
+
+  // 安全ルールに従い for...of を使用
+  for (const sec of sections) {
+    renderSectionUI(sec);
+  }
+}
+
+/**
+ * セクションのUI要素を生成して追加
+ */
+function renderSectionUI(sec) {
+  const container = document.getElementById('sections-container');
+  const secId = sec.id || "sec_" + Date.now() + "_" + Math.random().toString(36).substr(2, 4);
+
+  const card = document.createElement('div');
+  card.className = "section-card";
+  card.dataset.sectionId = secId;
+
+  // コード行のHTML
+  let chordThs = "";
+  for (let i = 0; i < 8; i++) {
+    const val = (sec.chords && sec.chords[i]) ? sec.chords[i] : "";
+    chordThs += `<th><input type="text" class="tab-input chord-input" placeholder="コード" value="${val}"></th>`;
+  }
+
+  // 6弦分のTab譜行HTML
+  let tabRows = "";
+  for (let sIdx = 0; sIdx < 6; sIdx++) {
+    let tds = "";
+    for (let step = 0; step < 8; step++) {
+      const val = (sec.grid && sec.grid[sIdx] && sec.grid[sIdx][step]) ? sec.grid[sIdx][step] : "-";
+      tds += `<td><input type="text" class="tab-input" data-string="${sIdx}" data-step="${step}" value="${val}"></td>`;
+    }
+    tabRows += `
+      <tr>
+        <td class="string-label">${STRINGS[sIdx]}</td>
+        ${tds}
+      </tr>
+    `;
+  }
+
+  card.innerHTML = `
+    <div class="section-header">
+      <input type="text" class="section-name" value="${sec.name || '新規セクション'}" style="font-weight:bold; font-size:1.05rem; width: 70%;">
+      <button type="button" class="btn-danger" onclick="removeSection('${secId}')">削除</button>
+    </div>
+    
+    <div class="tab-grid-wrapper">
+      <table class="tab-table">
+        <thead>
+          <tr>
+            <th class="string-label">Chord</th>
+            ${chordThs}
+          </tr>
+        </thead>
+        <tbody>
+          ${tabRows}
+        </tbody>
+      </table>
+    </div>
+
+    <div style="margin-top: 8px;">
+      <input type="text" class="section-memo" placeholder="奏法メモ（例: 7h9は薬指でチョーキング、強めにピッキング）" value="${sec.memo || ''}">
+    </div>
+  `;
+
+  container.appendChild(card);
+}
+
+/**
+ * 新しいセクションを追加
+ */
+function addSection(defaultName = "New Section") {
+  const newSec = {
+    id: "sec_" + Date.now(),
+    name: defaultName,
+    memo: "",
+    chords: Array(8).fill(""),
+    grid: { 0: Array(8).fill("-"), 1: Array(8).fill("-"), 2: Array(8).fill("-"), 3: Array(8).fill("-"), 4: Array(8).fill("-"), 5: Array(8).fill("-") }
+  };
+  renderSectionUI(newSec);
+}
+
+/**
+ * セクション削除
+ */
+function removeSection(secId) {
+  const card = document.querySelector(`.section-card[data-section-id="${secId}"]`);
+  if (card && confirm("このセクションを削除しますか？")) {
+    card.remove();
+  }
+}
+
+/**
+ * ASCIIテキスト表記のTab譜を出力・コピー
+ */
+function generateAsciiTab() {
+  collectFormData(); // 最新状態に更新
+  
+  let ascii = `Title: ${appData.logs.songTitle || 'Untitled'}\n`;
+  ascii += `Tuning: ${appData.logs.tuning} | BPM: ${appData.logs.bpm} | CAPO: ${appData.logs.capo}\n`;
+  ascii += `===========================================\n\n`;
+
+  for (const sec of appData.logs.sections) {
+    ascii += `[${sec.name}]\n`;
+    if (sec.memo) ascii += `Memo: ${sec.memo}\n`;
+
+    // 弦ごとにテキスト整形
+    for (let sIdx = 0; sIdx < 6; sIdx++) {
+      let line = `${STRINGS[sIdx]}|`;
+      for (let step = 0; step < 8; step++) {
+        let val = (sec.grid[sIdx] && sec.grid[sIdx][step]) ? sec.grid[sIdx][step] : "-";
+        if (val === "") val = "-";
+        // 文字数を揃える
+        line += `-${val.toString().padEnd(3, '-')}`;
+      }
+      line += "|\n";
+      ascii += line;
+    }
+    ascii += "\n";
+  }
+
+  const container = document.getElementById('ascii-output-container');
+  const textEl = document.getElementById('ascii-text');
+  textEl.innerText = ascii;
+  container.style.display = 'block';
+
+  // クリップボードにコピー
+  navigator.clipboard.writeText(ascii).then(() => {
+    alert("ASCII Tab譜をクリップボードにコピーしました！");
+  }).catch(() => {});
+}
+
+/**
+ * 📤 スプレッドシートへデータを書き込む (POST)
+ */
+async function saveToSpreadsheet() {
+  const statusLabel = document.getElementById('sync-status');
+  statusLabel.innerText = "💾 クラウドに保存中...";
+  try {
+    const res = await fetch(GAS_API_URL, { method: "POST", body: JSON.stringify(appData) });
+    if (res.ok) {
+      statusLabel.innerText = "✅ スプレッドシートに保存しました！";
+    } else {
+      statusLabel.innerText = "❌ クラウド保存エラー(ステータス不正)";
+    }
+  } catch(e) {
+    console.error(e);
+    statusLabel.innerText = "❌ クラウド保存エラー";
+  }
+}
+</script>
+</body>
+</html>
