@@ -206,14 +206,12 @@
     .tab-table th, .tab-table td {
       border: 1px solid #444;
       text-align: center;
-      padding: 2px;
-      width: 54px;
-      min-width: 54px;
-      max-width: 54px;
-      box-sizing: border-box;
+      padding: 0;
+      min-width: 56px;
+      width: max-content;
       position: relative;
     }
-    .tab-table th { background-color: #1a1a1a; color: var(--accent-color); font-size: 0.8rem; }
+    .tab-table th { background-color: #1a1a1a; color: var(--accent-color); font-size: 0.75rem; }
     
     .string-control-td {
       white-space: nowrap;
@@ -221,7 +219,6 @@
       background: #181818;
       width: 90px !important;
       min-width: 90px !important;
-      max-width: 90px !important;
     }
     .string-select {
       background: #111;
@@ -241,7 +238,7 @@
       top: 0; left: 0; right: 0; bottom: 0;
       display: flex; align-items: center; justify-content: center;
       color: rgba(255, 255, 255, 0.25);
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       pointer-events: none;
       font-weight: bold;
     }
@@ -253,12 +250,17 @@
       color: #fff;
       text-align: center;
       font-family: monospace;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       font-weight: bold;
       box-sizing: border-box;
       user-select: text;
+      padding: 0 2px;
     }
     
+    .chord-input {
+      font-size: 0.75rem;
+    }
+
     td.selected-cell {
       background-color: var(--select-bg) !important;
       outline: 2px solid var(--select-border);
