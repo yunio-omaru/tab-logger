@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tab譜 ＆ コードワーク ログエディタ</title>
+  <title>Tab & Chord Logger</title>
   <style>
     :root {
       --primary-color: #4a90e2;
@@ -13,7 +13,6 @@
       --text-color: #f0f0f0;
       --text-muted: #aaaaaa;
       --accent-color: #f39c12;
-      --fret-color: #e74c3c;
       --border-color: #3e3e3e;
     }
     body {
@@ -22,29 +21,41 @@
       color: var(--text-color);
       margin: 0;
       padding: 0;
+      padding-top: 60px; /* 固定ヘッダー分の余白 */
       padding-bottom: 40px;
     }
     .container {
-      max-width: 650px;
+      max-width: 700px;
       margin: 0 auto;
       padding: 12px;
       box-sizing: border-box;
     }
-    header {
+    /* 📌 固定ヘッダー */
+    header.fixed-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 50px;
+      background: #181818;
+      border-bottom: 1px solid var(--border-color);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: var(--card-bg);
-      padding: 12px 16px;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
-      margin-bottom: 12px;
-      border: 1px solid var(--border-color);
+      padding: 0 16px;
+      z-index: 1000;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    }
+    .header-title {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #fff;
+      margin: 0;
     }
     button {
       cursor: pointer;
       border: none;
-      border-radius: 8px;
+      border-radius: 6px;
       padding: 8px 14px;
       font-weight: bold;
       transition: opacity 0.2s;
@@ -53,8 +64,10 @@
     button:active { opacity: 0.7; }
     .btn-sync { background-color: #27ae60; color: white; }
     .btn-secondary { background-color: #333; color: #fff; border: 1px solid var(--border-color); }
-    .btn-add { background-color: var(--primary-color); color: white; margin-top: 8px; }
+    .btn-add { background-color: var(--primary-color); color: white; }
     .btn-danger { background-color: #c0392b; color: white; padding: 4px 8px; font-size: 0.8rem; }
+    .btn-sm { padding: 4px 8px; font-size: 0.8rem; }
+
     .sync-status-bar {
       font-size: 0.8rem;
       font-weight: bold;
@@ -76,13 +89,48 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.4);
       border: 1px solid var(--border-color);
     }
-    
+
+    /* メインメニュー（曲一覧）用スタイル */
+    .top-controls {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .search-input {
+      flex: 1;
+      padding: 8px 12px;
+      background: var(--card-inner-bg);
+      border: 1px solid var(--border-color);
+      color: #fff;
+      border-radius: 6px;
+    }
+    .song-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .song-item {
+      background: var(--card-inner-bg);
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      border: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+    .song-item:hover { background: #333; }
+    .song-artist { font-size: 0.85rem; color: var(--text-muted); }
+    .song-title-text { font-size: 1rem; font-weight: bold; color: #fff; margin-top: 2px; }
+
     /* フォーム要素のスタイル */
     .form-group { margin-bottom: 12px; }
     .form-group label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; }
-    input[type="text"], input[type="number"], select, textarea {
+    input[type="text"], input[type="number"], select {
       width: 100%;
-      padding: 10px;
+      padding: 8px 10px;
       box-sizing: border-box;
       background-color: var(--card-inner-bg);
       border: 1px solid var(--border-color);
@@ -93,7 +141,7 @@
     .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .grid-3col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
 
-    /* Tab譜エディタ表示部分 */
+    /* セクション & パート Card */
     .section-card {
       background: var(--card-inner-bg);
       border-radius: 8px;
@@ -101,12 +149,27 @@
       margin-bottom: 16px;
       border: 1px solid var(--border-color);
     }
-    .section-header {
+    .part-card {
+      background: #222;
+      border-radius: 6px;
+      padding: 10px;
+      margin-top: 10px;
+      border: 1px solid #3a3a3a;
+    }
+    .part-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
+    .part-name-input {
+      width: 100px !important;
+      font-weight: bold;
+      color: var(--accent-color);
+      text-align: center;
+    }
+
+    /* Tab 譜テーブル */
     .tab-grid-wrapper {
       overflow-x: auto;
       padding-bottom: 8px;
@@ -115,31 +178,54 @@
       border-collapse: collapse;
       font-family: 'Courier New', Courier, monospace;
       width: 100%;
-      min-width: 480px;
+      min-width: 520px;
     }
     .tab-table th, .tab-table td {
       border: 1px solid #444;
       text-align: center;
-      padding: 4px 2px;
+      padding: 2px;
       min-width: 32px;
+      position: relative;
     }
-    .tab-table th { background-color: #202020; color: var(--accent-color); font-size: 0.8rem; }
-    .string-label { font-weight: bold; color: var(--primary-color); background: #181818; width: 30px; }
+    .tab-table th { background-color: #1a1a1a; color: var(--accent-color); font-size: 0.8rem; }
     
-    .tab-input {
+    /* 弦選択プルダウン */
+    .string-select {
+      background: #111;
+      color: var(--primary-color);
+      border: none;
+      font-weight: bold;
+      font-size: 0.85rem;
+      text-align: center;
+      padding: 2px 0;
       width: 100%;
+    }
+
+    /* Tab入力欄 ＆ ゴースト（前パート透過表示） */
+    .tab-input-wrapper { position: relative; width: 100%; height: 28px; }
+    .tab-ghost {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(255, 255, 255, 0.25);
+      font-size: 0.9rem;
+      pointer-events: none;
+      font-weight: bold;
+    }
+    .tab-input {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
       background: transparent;
       border: none;
       color: #fff;
       text-align: center;
       font-family: monospace;
-      font-size: 1.05rem;
+      font-size: 1rem;
       font-weight: bold;
-      padding: 2px 0;
+      box-sizing: border-box;
     }
-    .tab-input:focus { background-color: #3a3a3a; outline: 1px solid var(--primary-color); }
+    .tab-input:focus { background-color: rgba(255,255,255,0.15); outline: 1px solid var(--primary-color); }
     
-    /* テキストプレビューエリア */
     .ascii-output {
       font-family: monospace;
       white-space: pre;
@@ -154,80 +240,93 @@
   </style>
 </head>
 <body>
+
+<!-- 📌 固定ヘッダー -->
+<header class="fixed-header">
+  <div class="header-title" onclick="showListPage()" style="cursor:pointer;">Tab & Chord Logger</div>
+  <!-- ⚙️ onclick によるダイレクト発火 -->
+  <button id="btn-save" class="btn-sync" onclick="executeSave()">💾 保存</button>
+</header>
+
 <div class="container">
   <!-- 🎛️ 同期ステータスバー -->
   <div id="sync-status" class="sync-status-bar">🔄 接続確認中...</div>
 
-  <!-- メイン画面 -->
-  <div id="page-main" class="page active">
-    <header>
-      <h1 style="font-size: 1.1rem; margin:0;">🎸 Tab & Chord Logger</h1>
-      <!-- ⚙️ onclickによるダイレクト発火 -->
-      <button id="btn-save" class="btn-sync" onclick="executeSave()">💾 保存</button>
-    </header>
+  <!-- 🏠 1. メインメニュー（曲一覧画面） -->
+  <div id="page-list" class="page active">
+    <div class="top-controls">
+      <button class="btn-add" onclick="createNewSong()">＋ 追加</button>
+      <input type="text" id="search-box" class="search-input" placeholder="検索 (歌手名 or 曲名)" oninput="filterSongs()">
+    </div>
+    <ul id="song-list-container" class="song-list"></ul>
+  </div>
 
+  <!-- ✏️ 2. 楽曲編集・詳細画面 -->
+  <div id="page-edit" class="page">
+    <button class="btn-secondary" onclick="showListPage()" style="margin-bottom: 12px;">← 曲一覧に戻る</button>
     <div class="app-content">
-      <!-- 楽曲の基本情報 -->
-      <div class="form-group">
-        <label for="song-title">🎵 曲名 (Song Title)</label>
-        <input type="text" id="song-title" placeholder="例: My Original Solo">
+      
+      <div class="grid-2col form-group">
+        <div>
+          <label for="song-artist">歌手名：</label>
+          <input type="text" id="song-artist" placeholder="例: Official髭男dism">
+        </div>
+        <div>
+          <label for="song-title">曲名：</label>
+          <input type="text" id="song-title" placeholder="例: Subtitle">
+        </div>
       </div>
 
       <div class="grid-3col form-group">
         <div>
-          <label for="song-bpm">BPM</label>
+          <label for="song-bpm">BPM：</label>
           <input type="number" id="song-bpm" value="120">
         </div>
         <div>
-          <label for="song-tuning">チューニング</label>
-          <input type="text" id="song-tuning" value="Standard (EADGBE)">
+          <label for="song-tuning">チューニング：</label>
+          <input type="text" id="song-tuning" value="Standard">
         </div>
         <div>
-          <label for="song-capo">CAPO</label>
+          <label for="song-capo">capo：</label>
           <input type="number" id="song-capo" value="0">
         </div>
       </div>
 
       <hr style="border: 0.5px solid var(--border-color); margin: 20px 0;">
 
-      <!-- Tab譜セクションエリア -->
+      <!-- セクションコンテナ -->
       <div id="sections-container"></div>
 
-      <button type="button" class="btn-add" onclick="addSection()" style="width: 100%; padding: 10px;">
-        ➕ 新しいセクションを追加 (Aメロ / サビ / ソロ等)
+      <button type="button" class="btn-add" onclick="addSection()" style="width: 100%; padding: 10px; margin-top: 10px;">
+        新しいセクション追加
       </button>
 
-      <!-- ASCII出力ボタン -->
+      <!-- テキスト・TuxGuitar生成エリア -->
       <div style="margin-top: 25px;">
         <button type="button" class="btn-secondary" onclick="generateAsciiTab()" style="width: 100%;">
-          📄 テキスト (ASCII Tab) を生成・コピー
+          📄 テキスト生成 (TuxGuitar / ASCII形式)
         </button>
         <div id="ascii-output-container" style="display: none;">
           <div class="ascii-output" id="ascii-text"></div>
         </div>
       </div>
+
     </div>
   </div>
 </div>
 
 <script>
-// 🔗 GASのWebアプリURL（設定済み）
+// 🔗 GASのWebアプリURL
 const GAS_API_URL = "https://script.google.com/macros/s/AKfycbx-eCy9s2F7b1ON2MnvMHIMo174bwkP_zzBm0JOcEJGrrR8QcO9UWgw77E1zNM9NYKF/exec";
 
-// 📦 アプリデータを一元管理する変数
+// 📦 アプリデータ構造
 let appData = {
-  logs: {
-    songTitle: "",
-    bpm: 120,
-    tuning: "Standard",
-    capo: 0,
-    sections: []
-  },
+  songs: [], // 全楽曲データ配列
   master: {}
 };
 
-// 弦のリスト (1弦 -> 6弦)
-const STRINGS = ["e", "B", "G", "D", "A", "E"];
+let currentSongId = null; // 現在編集中の曲ID
+const DEFAULT_TUNING = ["e", "B", "G", "D", "A", "E"]; // 標準1〜6弦
 
 // 起動時の初期処理
 document.addEventListener('DOMContentLoaded', () => {
@@ -244,7 +343,7 @@ async function loadFromSpreadsheet() {
     const res = await fetch(GAS_API_URL);
     if(res.ok) {
       const data = await res.json();
-      if (data && Object.keys(data).length > 0 && data.logs) {
+      if (data && data.songs) {
         appData = data;
       }
       statusLabel.innerText = "✅ 同期完了";
@@ -253,10 +352,7 @@ async function loadFromSpreadsheet() {
   } catch(e) {
     console.error(e);
     statusLabel.innerText = "❌ 読み込み同期エラー";
-    // データがない場合の初期セクション
-    if(!appData.logs.sections || appData.logs.sections.length === 0) {
-      addSection("Guitar Solo");
-    }
+    renderApp();
   }
 }
 
@@ -283,146 +379,415 @@ async function executeSave() {
  * 📝 画面の入力値を appData に集約する
  */
 function collectFormData() {
-  appData.logs.songTitle = document.getElementById('song-title').value;
-  appData.logs.bpm = document.getElementById('song-bpm').value;
-  appData.logs.tuning = document.getElementById('song-tuning').value;
-  appData.logs.capo = document.getElementById('song-capo').value;
+  if (!currentSongId) return;
 
-  const sectionElements = document.querySelectorAll('.section-card');
+  // 現在の曲の基本情報収集
+  let song = null;
+  for (const s of appData.songs) {
+    if (s.id === currentSongId) {
+      song = s;
+      break;
+    }
+  }
+  if (!song) return;
+
+  song.artist = document.getElementById('song-artist').value;
+  song.title = document.getElementById('song-title').value;
+  song.bpm = document.getElementById('song-bpm').value;
+  song.tuning = document.getElementById('song-tuning').value;
+  song.capo = document.getElementById('song-capo').value;
+
+  // セクション情報の収集
+  const sectionCards = document.querySelectorAll('.section-card');
   const sections = [];
 
-  // ループ内でfor...ofを使用（安全基準厳守）
-  for (const sEl of sectionElements) {
-    const sectionId = sEl.dataset.sectionId;
-    const name = sEl.querySelector('.section-name').value;
-    const memo = sEl.querySelector('.section-memo').value;
-    
-    // コードネームの取得
-    const chordInputs = sEl.querySelectorAll('.chord-input');
+  for (const sCard of sectionCards) {
+    const secId = sCard.dataset.sectionId;
+    const secName = sCard.querySelector('.section-name').value;
+    const memo = sCard.querySelector('.section-memo').value;
+
+    // コードネーム
+    const chordInputs = sCard.querySelectorAll('.chord-input');
     const chords = [];
-    for (const cInput of chordInputs) {
-      chords.push(cInput.value);
+    for (const cIn of chordInputs) {
+      chords.push(cIn.value);
     }
 
-    // Tab譜グリッドデータ（1〜6弦 × 8ステップ）の取得
-    const grid = {};
-    for (let sIdx = 0; sIdx < 6; sIdx++) {
-      grid[sIdx] = [];
-      for (let step = 0; step < 8; step++) {
-        const input = sEl.querySelector(`.tab-input[data-string="${sIdx}"][data-step="${step}"]`);
-        grid[sIdx].push(input ? input.value : "-");
+    // パート収集
+    const partCards = sCard.querySelectorAll('.part-card');
+    const parts = [];
+
+    for (const pCard of partCards) {
+      const partId = pCard.dataset.partId;
+      const partName = pCard.querySelector('.part-name-input').value;
+
+      // 弦のチューニング
+      const stringSelects = pCard.querySelectorAll('.string-select');
+      const tuning = [];
+      for (const sSel of stringSelects) {
+        tuning.push(sSel.value);
       }
+
+      // Tabデータ (弦 × 8ステップ)
+      const grid = {};
+      for (let sIdx = 0; sIdx < tuning.length; sIdx++) {
+        grid[sIdx] = [];
+        for (let step = 0; step < 8; step++) {
+          const input = pCard.querySelector(`.tab-input[data-string="${sIdx}"][data-step="${step}"]`);
+          grid[sIdx].push(input ? input.value : "-");
+        }
+      }
+
+      parts.push({
+        id: partId,
+        name: partName,
+        tuning: tuning,
+        grid: grid
+      });
     }
 
     sections.push({
-      id: sectionId,
-      name: name,
+      id: secId,
+      name: secName,
       memo: memo,
       chords: chords,
-      grid: grid
+      parts: parts
     });
   }
 
-  appData.logs.sections = sections;
+  song.sections = sections;
 }
 
 /**
  * 💻 データを画面に描写する
  */
 function renderApp() {
-  document.getElementById('song-title').value = appData.logs.songTitle || "";
-  document.getElementById('song-bpm').value = appData.logs.bpm || 120;
-  document.getElementById('song-tuning').value = appData.logs.tuning || "Standard (EADGBE)";
-  document.getElementById('song-capo').value = appData.logs.capo || 0;
+  renderSongList();
+}
 
-  const container = document.getElementById('sections-container');
-  container.innerHTML = "";
+/**
+ * 曲一覧リストを描画・検索フィルター
+ */
+function renderSongList() {
+  const listEl = document.getElementById('song-list-container');
+  const keyword = document.getElementById('search-box').value.toLowerCase();
+  listEl.innerHTML = "";
 
-  const sections = appData.logs.sections || [];
-  
-  if (sections.length === 0) {
-    addSection("メインフレーズ");
-    return;
+  for (const song of appData.songs) {
+    const matchArtist = (song.artist || "").toLowerCase().includes(keyword);
+    const matchTitle = (song.title || "").toLowerCase().includes(keyword);
+
+    if (matchArtist || matchTitle) {
+      const li = document.createElement('li');
+      li.className = 'song-item';
+      li.onclick = () => openEditPage(song.id);
+      li.innerHTML = `
+        <div>
+          <div class="song-artist">${song.artist || '（未設定の歌手）'}</div>
+          <div class="song-title-text">${song.title || '（無題の曲）'}</div>
+        </div>
+        <button class="btn-danger btn-sm" onclick="event.stopPropagation(); deleteSong('${song.id}')">削除</button>
+      `;
+      listEl.appendChild(li);
+    }
   }
+}
 
-  // 安全ルールに従い for...of を使用
-  for (const sec of sections) {
-    renderSectionUI(sec);
+function filterSongs() {
+  renderSongList();
+}
+
+/**
+ * 画面切り替え：一覧画面を表示
+ */
+function showListPage() {
+  collectFormData();
+  document.getElementById('page-list').classList.add('active');
+  document.getElementById('page-edit').classList.remove('active');
+  renderSongList();
+}
+
+/**
+ * 新規楽曲の作成
+ */
+function createNewSong() {
+  const newSong = {
+    id: "song_" + Date.now(),
+    artist: "",
+    title: "",
+    bpm: 120,
+    tuning: "Standard",
+    capo: 0,
+    sections: []
+  };
+  appData.songs.unshift(newSong);
+  openEditPage(newSong.id);
+  addSection("Aメロ");
+}
+
+/**
+ * 曲の削除
+ */
+function deleteSong(songId) {
+  if (confirm("この楽曲を削除しますか？")) {
+    appData.songs = appData.songs.filter(s => s.id !== songId);
+    renderSongList();
   }
 }
 
 /**
- * セクションのUI要素を生成して追加
+ * 編集画面を開く
+ */
+function openEditPage(songId) {
+  currentSongId = songId;
+  const song = appData.songs.find(s => s.id === songId);
+  if (!song) return;
+
+  document.getElementById('song-artist').value = song.artist || "";
+  document.getElementById('song-title').value = song.title || "";
+  document.getElementById('song-bpm').value = song.bpm || 120;
+  document.getElementById('song-tuning').value = song.tuning || "Standard";
+  document.getElementById('song-capo').value = song.capo || 0;
+
+  const secContainer = document.getElementById('sections-container');
+  secContainer.innerHTML = "";
+
+  for (const sec of (song.sections || [])) {
+    renderSectionUI(sec);
+  }
+
+  document.getElementById('page-list').classList.remove('active');
+  document.getElementById('page-edit').classList.add('active');
+  document.getElementById('ascii-output-container').style.display = 'none';
+}
+
+/**
+ * セクションのUIレンダリング
  */
 function renderSectionUI(sec) {
-  const container = document.getElementById('sections-container');
+  const secContainer = document.getElementById('sections-container');
   const secId = sec.id || "sec_" + Date.now() + "_" + Math.random().toString(36).substr(2, 4);
 
   const card = document.createElement('div');
   card.className = "section-card";
   card.dataset.sectionId = secId;
 
-  // コード行のHTML
+  // コード行
   let chordThs = "";
   for (let i = 0; i < 8; i++) {
     const val = (sec.chords && sec.chords[i]) ? sec.chords[i] : "";
     chordThs += `<th><input type="text" class="tab-input chord-input" placeholder="コード" value="${val}"></th>`;
   }
 
-  // 6弦分のTab譜行HTML
-  let tabRows = "";
-  for (let sIdx = 0; sIdx < 6; sIdx++) {
+  card.innerHTML = `
+    <div class="part-header" style="margin-bottom:12px;">
+      <input type="text" class="section-name" value="${sec.name || '新規セクション'}" style="font-weight:bold; font-size:1.05rem; width:65%;">
+      <button type="button" class="btn-danger btn-sm" onclick="removeSection('${secId}')">セクション削除</button>
+    </div>
+
+    <div class="tab-grid-wrapper" style="margin-bottom:10px;">
+      <table class="tab-table">
+        <thead>
+          <tr>
+            <th style="width:50px;">Chord</th>
+            ${chordThs}
+          </tr>
+        </thead>
+      </table>
+    </div>
+
+    <!-- パート（gt1, gt2, key等）コンテナ -->
+    <div class="parts-container"></div>
+
+    <button type="button" class="btn-secondary btn-sm" onclick="addPartToSection('${secId}')" style="margin-top:8px;">
+      [＋] パート追加 (gt1, gt2, key等)
+    </button>
+
+    <div style="margin-top: 10px;">
+      <label style="font-size:0.8rem; color:var(--text-muted);">奏法メモ：</label>
+      <input type="text" class="section-memo" placeholder="例: 3ピッキング目からチョーキング" value="${sec.memo || ''}">
+    </div>
+  `;
+
+  secContainer.appendChild(card);
+
+  // パートの描画
+  const partsContainer = card.querySelector('.parts-container');
+  const parts = (sec.parts && sec.parts.length > 0) ? sec.parts : [{ id: "part_" + Date.now(), name: "gt1", tuning: [...DEFAULT_TUNING], grid: {} }];
+  
+  for (let pIdx = 0; pIdx < parts.length; pIdx++) {
+    const prevPart = (pIdx > 0) ? parts[pIdx - 1] : null;
+    renderPartUI(partsContainer, parts[pIdx], prevPart);
+  }
+}
+
+/**
+ * パート (gt1, gt2等) UIレンダリング
+ */
+function renderPartUI(partsContainer, part, prevPart = null) {
+  const partId = part.id || "part_" + Date.now() + "_" + Math.random().toString(36).substr(2, 4);
+  const partCard = document.createElement('div');
+  partCard.className = "part-card";
+  partCard.dataset.partId = partId;
+
+  const tuning = part.tuning || [...DEFAULT_TUNING];
+
+  let tabRowsHtml = "";
+  for (let sIdx = 0; sIdx < tuning.length; sIdx++) {
     let tds = "";
     for (let step = 0; step < 8; step++) {
-      const val = (sec.grid && sec.grid[sIdx] && sec.grid[sIdx][step]) ? sec.grid[sIdx][step] : "-";
-      tds += `<td><input type="text" class="tab-input" data-string="${sIdx}" data-step="${step}" value="${val}"></td>`;
+      const val = (part.grid && part.grid[sIdx] && part.grid[sIdx][step]) ? part.grid[sIdx][step] : "-";
+      
+      // ゴースト機能（前パートのフレット値を薄っすら背景表示）
+      let ghostVal = "";
+      if (prevPart && prevPart.grid && prevPart.grid[sIdx] && prevPart.grid[sIdx][step]) {
+        ghostVal = prevPart.grid[sIdx][step];
+        if (ghostVal === "-") ghostVal = "";
+      }
+
+      tds += `
+        <td>
+          <div class="tab-input-wrapper">
+            <div class="tab-ghost">${ghostVal}</div>
+            <input type="text" class="tab-input" data-string="${sIdx}" data-step="${step}" value="${val}" oninput="updateGhostGuide(this)">
+          </div>
+        </td>
+      `;
     }
-    tabRows += `
+
+    tabRowsHtml += `
       <tr>
-        <td class="string-label">${STRINGS[sIdx]}</td>
+        <td style="width:50px;">
+          <select class="string-select">
+            ${['e','B','G','D','A','E','C','D#','F#'].map(note => `<option value="${note}" ${note === tuning[sIdx] ? 'selected' : ''}>${note}</option>`).join('')}
+          </select>
+        </td>
         ${tds}
       </tr>
     `;
   }
 
-  card.innerHTML = `
-    <div class="section-header">
-      <input type="text" class="section-name" value="${sec.name || '新規セクション'}" style="font-weight:bold; font-size:1.05rem; width: 70%;">
-      <button type="button" class="btn-danger" onclick="removeSection('${secId}')">削除</button>
+  partCard.innerHTML = `
+    <div class="part-header">
+      <div>
+        ＜<input type="text" class="part-name-input" value="${part.name || 'gt1'}">＞
+        <button type="button" class="btn-secondary btn-sm" onclick="addString('${partId}')">＋ 弦追加</button>
+        <button type="button" class="btn-secondary btn-sm" onclick="removeString('${partId}')">－ 弦削除</button>
+      </div>
+      <button type="button" class="btn-danger btn-sm" onclick="this.closest('.part-card').remove()">パート削除</button>
     </div>
-    
+
     <div class="tab-grid-wrapper">
       <table class="tab-table">
-        <thead>
-          <tr>
-            <th class="string-label">Chord</th>
-            ${chordThs}
-          </tr>
-        </thead>
         <tbody>
-          ${tabRows}
+          ${tabRowsHtml}
         </tbody>
       </table>
     </div>
-
-    <div style="margin-top: 8px;">
-      <input type="text" class="section-memo" placeholder="奏法メモ（例: 7h9は薬指でチョーキング、強めにピッキング）" value="${sec.memo || ''}">
-    </div>
   `;
 
-  container.appendChild(card);
+  partsContainer.appendChild(partCard);
 }
 
 /**
- * 新しいセクションを追加
+ * ゴースト表示のリアルタイム更新
  */
-function addSection(defaultName = "New Section") {
+function updateGhostGuide(inputEl) {
+  const wrapper = inputEl.closest('.tab-input-wrapper');
+  const ghost = wrapper.querySelector('.tab-ghost');
+  if (inputEl.value && inputEl.value !== "-") {
+    ghost.style.display = 'none';
+  } else {
+    ghost.style.display = 'flex';
+  }
+}
+
+/**
+ * セクションへ新しいパートを追加
+ */
+function addPartToSection(secId) {
+  const sCard = document.querySelector(`.section-card[data-section-id="${secId}"]`);
+  const partsContainer = sCard.querySelector('.parts-container');
+  const existingParts = partsContainer.querySelectorAll('.part-card');
+  const partCount = existingParts.length + 1;
+  
+  const newPart = {
+    id: "part_" + Date.now(),
+    name: "gt" + partCount,
+    tuning: [...DEFAULT_TUNING],
+    grid: {}
+  };
+
+  // 一つ前のパートを取得してゴースト用に利用
+  let prevPartData = null;
+  if (existingParts.length > 0) {
+    const lastPartCard = existingParts[existingParts.length - 1];
+    prevPartData = { grid: {} };
+    const inputs = lastPartCard.querySelectorAll('.tab-input');
+    for (const inp of inputs) {
+      const s = inp.dataset.string;
+      const st = inp.dataset.step;
+      if (!prevPartData.grid[s]) prevPartData.grid[s] = [];
+      prevPartData.grid[s][st] = inp.value;
+    }
+  }
+
+  renderPartUI(partsContainer, newPart, prevPartData);
+}
+
+/**
+ * 弦の追加
+ */
+function addString(partId) {
+  const pCard = document.querySelector(`.part-card[data-part-id="${partId}"]`);
+  const tbody = pCard.querySelector('tbody');
+  const sIdx = tbody.querySelectorAll('tr').length;
+
+  let tds = "";
+  for (let step = 0; step < 8; step++) {
+    tds += `
+      <td>
+        <div class="tab-input-wrapper">
+          <div class="tab-ghost"></div>
+          <input type="text" class="tab-input" data-string="${sIdx}" data-step="${step}" value="-">
+        </div>
+      </td>
+    `;
+  }
+
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td style="width:50px;">
+      <select class="string-select">
+        ${['e','B','G','D','A','E','C','D#','F#'].map(note => `<option value="${note}">${note}</option>`).join('')}
+      </select>
+    </td>
+    ${tds}
+  `;
+  tbody.appendChild(tr);
+}
+
+/**
+ * 弦の削除
+ */
+function removeString(partId) {
+  const pCard = document.querySelector(`.part-card[data-part-id="${partId}"]`);
+  const trs = pCard.querySelectorAll('tbody tr');
+  if (trs.length > 1) {
+    trs[trs.length - 1].remove();
+  }
+}
+
+/**
+ * セクション追加
+ */
+function addSection(defaultName = "新規セクション") {
   const newSec = {
     id: "sec_" + Date.now(),
     name: defaultName,
     memo: "",
     chords: Array(8).fill(""),
-    grid: { 0: Array(8).fill("-"), 1: Array(8).fill("-"), 2: Array(8).fill("-"), 3: Array(8).fill("-"), 4: Array(8).fill("-"), 5: Array(8).fill("-") }
+    parts: [{ id: "part_" + Date.now(), name: "gt1", tuning: [...DEFAULT_TUNING], grid: {} }]
   };
   renderSectionUI(newSec);
 }
@@ -438,30 +803,45 @@ function removeSection(secId) {
 }
 
 /**
- * ASCIIテキスト表記のTab譜を出力・コピー
+ * TuxGuitar / ASCII形式テキスト出力
  */
 function generateAsciiTab() {
-  collectFormData(); // 最新状態に更新
-  
-  let ascii = `Title: ${appData.logs.songTitle || 'Untitled'}\n`;
-  ascii += `Tuning: ${appData.logs.tuning} | BPM: ${appData.logs.bpm} | CAPO: ${appData.logs.capo}\n`;
+  collectFormData();
+  const song = appData.songs.find(s => s.id === currentSongId);
+  if (!song) return;
+
+  let ascii = `Artist: ${song.artist || 'Unknown'}\n`;
+  ascii += `Title: ${song.title || 'Untitled'}\n`;
+  ascii += `BPM: ${song.bpm} | Tuning: ${song.tuning} | CAPO: ${song.capo}\n`;
   ascii += `===========================================\n\n`;
 
-  for (const sec of appData.logs.sections) {
+  for (const sec of (song.sections || [])) {
     ascii += `[${sec.name}]\n`;
     if (sec.memo) ascii += `Memo: ${sec.memo}\n`;
 
-    // 弦ごとにテキスト整形
-    for (let sIdx = 0; sIdx < 6; sIdx++) {
-      let line = `${STRINGS[sIdx]}|`;
-      for (let step = 0; step < 8; step++) {
-        let val = (sec.grid[sIdx] && sec.grid[sIdx][step]) ? sec.grid[sIdx][step] : "-";
-        if (val === "") val = "-";
-        // 文字数を揃える
-        line += `-${val.toString().padEnd(3, '-')}`;
+    // コード行
+    if (sec.chords && sec.chords.some(c => c !== "")) {
+      ascii += `Chord: |`;
+      for (let i = 0; i < 8; i++) {
+        ascii += ` ${(sec.chords[i] || '').padEnd(4, ' ')}|`;
       }
-      line += "|\n";
-      ascii += line;
+      ascii += `\n`;
+    }
+
+    // 各パートのTab出力
+    for (const part of (sec.parts || [])) {
+      ascii += `<${part.name}>\n`;
+      const tuning = part.tuning || DEFAULT_TUNING;
+      for (let sIdx = 0; sIdx < tuning.length; sIdx++) {
+        let line = `${(tuning[sIdx] || 'E').padEnd(2, ' ')}|`;
+        for (let step = 0; step < 8; step++) {
+          let val = (part.grid[sIdx] && part.grid[sIdx][step]) ? part.grid[sIdx][step] : "-";
+          if (val === "") val = "-";
+          line += `-${val.toString().padEnd(3, '-')}`;
+        }
+        line += "|\n";
+        ascii += line;
+      }
     }
     ascii += "\n";
   }
@@ -471,9 +851,8 @@ function generateAsciiTab() {
   textEl.innerText = ascii;
   container.style.display = 'block';
 
-  // クリップボードにコピー
   navigator.clipboard.writeText(ascii).then(() => {
-    alert("ASCII Tab譜をクリップボードにコピーしました！");
+    alert("TuxGuitar / ASCII形式テキストをクリップボードにコピーしました！");
   }).catch(() => {});
 }
 
