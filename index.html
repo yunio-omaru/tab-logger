@@ -207,8 +207,8 @@
       border: 1px solid #444;
       text-align: center;
       padding: 0;
-      min-width: 56px;
-      width: max-content;
+      min-width: 68px; /* 🔍 Tab・コード共通の最小幅を68pxに拡大 */
+      box-sizing: border-box;
       position: relative;
     }
     .tab-table th { background-color: #1a1a1a; color: var(--accent-color); font-size: 0.75rem; }
@@ -232,33 +232,36 @@
       border-radius: 4px;
     }
 
-    .tab-input-wrapper { position: relative; width: 100%; height: 28px; }
+    .tab-input-wrapper { position: relative; width: 100%; height: 28px; display: flex; align-items: center; justify-content: center; }
     .tab-ghost {
       position: absolute;
       top: 0; left: 0; right: 0; bottom: 0;
       display: flex; align-items: center; justify-content: center;
       color: rgba(255, 255, 255, 0.25);
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       pointer-events: none;
       font-weight: bold;
     }
     .tab-input {
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
+      width: 100%;
+      height: 100%;
       background: transparent;
       border: none;
       color: #fff;
       text-align: center;
       font-family: monospace;
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       font-weight: bold;
       box-sizing: border-box;
       user-select: text;
-      padding: 0 2px;
+      padding: 0 4px;
     }
     
+    /* 🎸 コード入力欄（動的自動伸び設定） */
     .chord-input {
-      font-size: 0.75rem;
+      font-size: 0.8rem;
+      min-width: 68px;
+      width: auto;
     }
 
     td.selected-cell {
@@ -771,7 +774,8 @@ function renderSectionUI(sec) {
   let chordThs = "";
   for (let i = 0; i < totalSteps; i++) {
     const val = (sec.chords && sec.chords[i]) ? sec.chords[i] : "";
-    chordThs += `<th><input type="text" class="tab-input chord-input" data-step="${i}" placeholder="コード" value="${val}" oninput="checkAndExpandColumns(this)"></th>`;
+    const len = Math.max(val.length, 6);
+    chordThs += `<th><input type="text" class="tab-input chord-input" data-step="${i}" placeholder="コード" value="${val}" style="width:${len}ch;" oninput="adjustInputWidth(this); checkAndExpandColumns(this);"></th>`;
   }
 
   card.innerHTML = `
@@ -903,6 +907,12 @@ function createStringRowHtml(sIdx, stringNote, part, prevPart, totalSteps = 8) {
   `;
 }
 
+/* 🔍 文字長さに応じたコード欄の動的枠拡張 */
+function adjustInputWidth(inputEl) {
+  const len = Math.max(inputEl.value.length, 6);
+  inputEl.style.width = `${len}ch`;
+}
+
 function checkAndExpandColumns(inputEl) {
   const sCard = inputEl.closest('.section-card');
   if (!sCard) return;
@@ -919,7 +929,7 @@ function checkAndExpandColumns(inputEl) {
 function expandSectionStep(sCard, newStepIdx) {
   const chordRow = sCard.querySelector('.chord-header-row');
   const th = document.createElement('th');
-  th.innerHTML = `<input type="text" class="tab-input chord-input" data-step="${newStepIdx}" placeholder="コード" value="" oninput="checkAndExpandColumns(this)">`;
+  th.innerHTML = `<input type="text" class="tab-input chord-input" data-step="${newStepIdx}" placeholder="コード" value="" style="width:6ch;" oninput="adjustInputWidth(this); checkAndExpandColumns(this)">`;
   chordRow.appendChild(th);
 
   const partCards = sCard.querySelectorAll('.part-card');
@@ -1051,6 +1061,7 @@ function detectAndSetChords(secId) {
       const detectedChord = analyzeAdvancedChordWithKey(Array.from(pitchSet), bassNoteName, estimatedKey);
       if (chordInputs[step]) {
         chordInputs[step].value = detectedChord;
+        adjustInputWidth(chordInputs[step]);
       }
     }
   }
@@ -1262,6 +1273,9 @@ function pasteClipboardToSelection() {
           formatCapoInput(inp);
           updateGhostGuide(inp);
           checkAndExpandColumns(inp);
+          if (inp.classList.contains('chord-input')) {
+            adjustInputWidth(inp);
+          }
         }
       }
     }
