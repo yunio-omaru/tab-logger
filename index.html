@@ -316,8 +316,8 @@
 </div>
 
 <script>
-// 🔗 GASのWebアプリURL
-const GAS_API_URL = "https://script.google.com/macros/s/AKfycbx-eCy9s2F7b1ON2MnvMHIMo174bwkP_zzBm0JOcEJGrrR8QcO9UWgw77E1zNM9NYKF/exec";
+// 🔗 GASのWebアプリURL (更新完了)
+const GAS_API_URL = "https://script.google.com/macros/s/AKfycby_ryGNAlu3Z8K_5Qd2IDWNQmnEst0zDvEVCcu2ybQB-Fxbz3pOo690gK-kdCEzzwRt/exec";
 
 // 📦 アプリデータ構造
 let appData = {
@@ -347,6 +347,9 @@ async function loadFromSpreadsheet() {
         appData = data;
       }
       statusLabel.innerText = "✅ 同期完了";
+      renderApp();
+    } else {
+      statusLabel.innerText = "⚠️ データレスポンスエラー";
       renderApp();
     }
   } catch(e) {
@@ -863,7 +866,14 @@ async function saveToSpreadsheet() {
   const statusLabel = document.getElementById('sync-status');
   statusLabel.innerText = "💾 クラウドに保存中...";
   try {
-    const res = await fetch(GAS_API_URL, { method: "POST", body: JSON.stringify(appData) });
+    const res = await fetch(GAS_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify(appData)
+    });
+    
     if (res.ok) {
       statusLabel.innerText = "✅ スプレッドシートに保存しました！";
     } else {
