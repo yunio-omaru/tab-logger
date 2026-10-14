@@ -219,7 +219,7 @@
       font-size: 0.8rem;
     }
 
-    /* 🎸 Chord枠 (100pxに確定) */
+    /* 🎸 Chord枠 (100px固定) */
     .chord-col {
       width: 100px !important;
     }
@@ -229,7 +229,7 @@
       max-width: 100px !important;
     }
 
-    /* 🎵 Tab枠 (70pxに確定) */
+    /* 🎵 Tab枠 (70px固定) */
     .tab-cell-col {
       width: 70px !important;
     }
@@ -457,10 +457,14 @@ const GITHUB_USER = "yunio-omaru";
 const GITHUB_REPO = "tab-logger";
 
 const NOTE_OPTIONS = [
-  "e", "E", "D#", "D", "C#", "C", "B", "A#", "A", "G#", "G", "F#", "F"
+  "e", "E", "D#", "Eb", "D", "C#", "Db", "C", "B", "A#", "Ab", "A", "G#", "G", "F#", "Gb", "F"
 ];
 
 const CHROMATIC_SCALE = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+const NOTE_TO_INDEX = {
+  "C":0, "C#":1, "DB":1, "D":2, "D#":3, "EB":3, "E":4, "F":5, "F#":6, "GB":6,
+  "G":7, "G#":8, "AB":8, "A":9, "A#":10, "BB":10, "B":11
+};
 const MAJOR_SCALE_INTERVALS = [0, 2, 4, 5, 7, 9, 11];
 
 let appData = {
@@ -1012,6 +1016,12 @@ function formatCapoInput(inputEl) {
   }
 }
 
+function parseNoteIndex(noteStr) {
+  if (!noteStr) return 0;
+  const cleanStr = noteStr.trim().toUpperCase();
+  return NOTE_TO_INDEX[cleanStr] !== undefined ? NOTE_TO_INDEX[cleanStr] : 0;
+}
+
 function detectSectionKey(sCard, capoVal) {
   const noteHistogram = {};
   CHROMATIC_SCALE.forEach(n => noteHistogram[n] = 0);
@@ -1020,16 +1030,14 @@ function detectSectionKey(sCard, capoVal) {
   for (const pCard of partCards) {
     const rows = pCard.querySelectorAll('tbody tr');
     for (const row of rows) {
-      const stringNote = row.querySelector('.string-select').value.toUpperCase();
+      const stringNote = row.querySelector('.string-select').value;
       const inputs = row.querySelectorAll('.tab-input');
       inputs.forEach(inp => {
         if (!inp.value || inp.value === "-") return;
         const match = inp.value.match(/^(\d+)/);
         if (match) {
           const fretVal = parseInt(match[1], 10);
-          let openIndex = CHROMATIC_SCALE.indexOf(stringNote);
-          if (openIndex === -1) openIndex = (stringNote === "E") ? 4 : 0;
-          
+          const openIndex = parseNoteIndex(stringNote);
           const absPitch = openIndex + fretVal + capoVal;
           const noteName = CHROMATIC_SCALE[absPitch % 12];
           noteHistogram[noteName] += 1;
@@ -1063,7 +1071,6 @@ function detectAndSetChords(secId) {
   if (!sCard) return;
 
   const capoVal = parseInt(document.getElementById('song-capo').value || "0", 10);
-  
   const estimatedKey = detectSectionKey(sCard, capoVal);
   const badge = document.getElementById(`key-badge-${secId}`);
   if (badge) badge.innerText = `Key: ${estimatedKey}`;
@@ -1074,13 +1081,15 @@ function detectAndSetChords(secId) {
 
   for (let step = 0; step < totalSteps; step++) {
     const pitchSet = new Set();
-    let lowestPitchVal = 999;
     let bassNoteName = "";
 
     for (const pCard of partCards) {
-      const rows = pCard.querySelectorAll('tbody tr');
-      for (const row of rows) {
-        const stringNote = row.querySelector('.string-select').value.toUpperCase();
+      const rows = Array.from(pCard.querySelectorAll('tbody tr'));
+      
+      // 🎸 低音弦（最下行＝6弦側）から上に向かって検索し、ベース音（一番下の音）を特定する
+      for (let rIdx = rows.length - 1; rIdx >= 0; rIdx--) {
+        const row = rows[rIdx];
+        const stringNote = row.querySelector('.string-select').value;
         const inp = row.querySelector(`.tab-input[data-step="${step}"]`);
         if (!inp || !inp.value || inp.value === "-") continue;
 
@@ -1091,15 +1100,12 @@ function detectAndSetChords(secId) {
         }
 
         if (!isNaN(fretVal)) {
-          let openIndex = CHROMATIC_SCALE.indexOf(stringNote);
-          if (openIndex === -1) openIndex = (stringNote === "E") ? 4 : 0;
-
+          const openIndex = parseNoteIndex(stringNote);
           const absolutePitch = openIndex + fretVal + capoVal;
           const noteName = CHROMATIC_SCALE[absolutePitch % 12];
           pitchSet.add(noteName);
 
-          if (absolutePitch < lowestPitchVal) {
-            lowestPitchVal = absolutePitch;
+          if (bassNoteName === "") {
             bassNoteName = noteName;
           }
         }
@@ -1120,22 +1126,18 @@ function analyzeAdvancedChordWithKey(notes, bassNote, keyRoot) {
   if (notes.length === 1) return notes[0];
 
   const chordPatterns = [
-    { suffix: "", intervals: [4, 7] },
+    { suffix: "m7", intervals: [3, 7, 10] },
+    { suffix: "maj7", intervals: [4, 7, 11] },
+    { suffix: "7", intervals: [4, 7, 10] },
+    { suffix: "mM7", intervals: [3, 7, 11] },
     { suffix: "m", intervals: [3, 7] },
+    { suffix: "", intervals: [4, 7] },
     { suffix: "add9", intervals: [2, 4, 7] },
     { suffix: "sus4", intervals: [5, 7] },
     { suffix: "sus2", intervals: [2, 7] },
-    { suffix: "7", intervals: [4, 7, 10] },
-    { suffix: "maj7", intervals: [4, 7, 11] },
-    { suffix: "m7", intervals: [3, 7, 10] },
-    { suffix: "mM7", intervals: [3, 7, 11] },
-    { suffix: "9", intervals: [2, 4, 7, 10] },
-    { suffix: "maj9", intervals: [2, 4, 7, 11] },
-    { suffix: "m9", intervals: [2, 3, 7, 10] },
-    { suffix: "7sus4", intervals: [5, 7, 10] },
-    { suffix: "dim", intervals: [3, 6] },
-    { suffix: "dim7", intervals: [3, 6, 9] },
     { suffix: "m7(b5)", intervals: [3, 6, 10] },
+    { suffix: "dim7", intervals: [3, 6, 9] },
+    { suffix: "dim", intervals: [3, 6] },
     { suffix: "aug", intervals: [4, 8] },
     { suffix: "6", intervals: [4, 7, 9] },
     { suffix: "m6", intervals: [3, 7, 9] },
@@ -1154,24 +1156,29 @@ function analyzeAdvancedChordWithKey(notes, bassNote, keyRoot) {
     for (const pat of chordPatterns) {
       const isMatch = pat.intervals.every(i => relativeIntervals.includes(i));
       if (isMatch) {
-        candidateChords.push({ root, suffix: pat.suffix });
+        candidateChords.push({
+          root: root,
+          suffix: pat.suffix,
+          matchCount: pat.intervals.length,
+          isBassRoot: (root === bassNote)
+        });
         break;
       }
     }
   }
 
   if (candidateChords.length > 0) {
-    const keyIdx = CHROMATIC_SCALE.indexOf(keyRoot);
-    const keyScaleNotes = MAJOR_SCALE_INTERVALS.map(i => CHROMATIC_SCALE[(keyIdx + i) % 12]);
-
+    // 優先度ソート: 最低音（ベース音）がルート音のコードを絶対優先
     candidateChords.sort((a, b) => {
-      const scoreA = keyScaleNotes.includes(a.root) ? 1 : 0;
-      const scoreB = keyScaleNotes.includes(b.root) ? 1 : 0;
-      return scoreB - scoreA;
+      if (a.isBassRoot !== b.isBassRoot) {
+        return a.isBassRoot ? -1 : 1;
+      }
+      return b.matchCount - a.matchCount;
     });
 
     const best = candidateChords[0];
     const baseChordName = best.root + best.suffix;
+    
     if (bassNote && bassNote !== best.root) {
       return `${baseChordName}/${bassNote}`;
     }
