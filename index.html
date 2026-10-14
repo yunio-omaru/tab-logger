@@ -176,7 +176,7 @@
       text-align: center;
     }
 
-    /* ↔️ 横スクロール設定（確実に可視化） */
+    /* ↔️ 横スクロール設定 */
     .tab-grid-wrapper {
       width: 100%;
       overflow-x: auto !important;
@@ -204,7 +204,7 @@
       border-collapse: collapse;
       font-family: 'Courier New', Courier, monospace;
       width: max-content;
-      table-layout: fixed; /* 列幅固定の厳格適用 */
+      table-layout: fixed;
     }
     .tab-table th, .tab-table td {
       border: 1px solid #444;
@@ -219,20 +219,29 @@
       font-size: 0.8rem;
     }
 
-    /* 🎸 Chord枠（px固定） */
+    /* 🎸 Chord枠 (100pxに確定) */
+    .chord-col {
+      width: 100px !important;
+    }
     .tab-table th.chord-th {
       width: 100px !important;
       min-width: 100px !important;
       max-width: 100px !important;
     }
 
-    /* 🎵 Tab枠（px固定） */
+    /* 🎵 Tab枠 (70pxに確定) */
+    .tab-cell-col {
+      width: 70px !important;
+    }
     .tab-table td.tab-cell {
       width: 70px !important;
       min-width: 70px !important;
       max-width: 70px !important;
     }
     
+    .control-col {
+      width: 90px !important;
+    }
     .string-control-td {
       white-space: nowrap;
       padding: 2px 4px !important;
@@ -792,8 +801,10 @@ function renderSectionUI(sec) {
     }
   }
 
+  let chordCols = '<col class="control-col">';
   let chordThs = "";
   for (let i = 0; i < totalSteps; i++) {
+    chordCols += '<col class="chord-col">';
     const val = (sec.chords && sec.chords[i]) ? sec.chords[i] : "";
     chordThs += `<th class="chord-th"><div class="tab-input-wrapper"><input type="text" class="tab-input chord-input" data-step="${i}" placeholder="コード" value="${val}" oninput="checkAndExpandColumns(this)"></div></th>`;
   }
@@ -809,6 +820,7 @@ function renderSectionUI(sec) {
 
     <div class="tab-grid-wrapper">
       <table class="tab-table">
+        <colgroup>${chordCols}</colgroup>
         <thead>
           <tr class="chord-header-row">
             <th class="string-control-td">
@@ -866,6 +878,11 @@ function renderPartUI(partsContainer, part, prevPart = null, totalSteps = 8) {
 
   const tuning = part.tuning || getLastUsedTuning();
 
+  let tabCols = '<col class="control-col">';
+  for (let i = 0; i < totalSteps; i++) {
+    tabCols += '<col class="tab-cell-col">';
+  }
+
   let tabRowsHtml = "";
   for (let sIdx = 0; sIdx < tuning.length; sIdx++) {
     tabRowsHtml += createStringRowHtml(sIdx, tuning[sIdx], part, prevPart, totalSteps);
@@ -882,6 +899,7 @@ function renderPartUI(partsContainer, part, prevPart = null, totalSteps = 8) {
 
     <div class="tab-grid-wrapper">
       <table class="tab-table">
+        <colgroup>${tabCols}</colgroup>
         <tbody>
           ${tabRowsHtml}
         </tbody>
@@ -941,6 +959,14 @@ function checkAndExpandColumns(inputEl) {
 }
 
 function expandSectionStep(sCard, newStepIdx) {
+  const chordTable = sCard.querySelector('.tab-grid-wrapper table');
+  const chordColgroup = chordTable.querySelector('colgroup');
+  if (chordColgroup) {
+    const col = document.createElement('col');
+    col.className = 'chord-col';
+    chordColgroup.appendChild(col);
+  }
+
   const chordRow = sCard.querySelector('.chord-header-row');
   const th = document.createElement('th');
   th.className = "chord-th";
@@ -949,6 +975,14 @@ function expandSectionStep(sCard, newStepIdx) {
 
   const partCards = sCard.querySelectorAll('.part-card');
   for (const pCard of partCards) {
+    const partTable = pCard.querySelector('.tab-grid-wrapper table');
+    const partColgroup = partTable.querySelector('colgroup');
+    if (partColgroup) {
+      const col = document.createElement('col');
+      col.className = 'tab-cell-col';
+      partColgroup.appendChild(col);
+    }
+
     const rows = pCard.querySelectorAll('tbody tr');
     for (const tr of rows) {
       const td = document.createElement('td');
