@@ -25,7 +25,7 @@
       padding-bottom: 40px;
     }
     .container {
-      max-width: 700px;
+      max-width: 750px;
       margin: 0 auto;
       padding: 12px;
       box-sizing: border-box;
@@ -67,6 +67,8 @@
     .btn-add { background-color: var(--primary-color); color: white; }
     .btn-danger { background-color: #c0392b; color: white; padding: 4px 8px; font-size: 0.8rem; }
     .btn-sm { padding: 4px 8px; font-size: 0.8rem; }
+    .btn-icon-danger { background-color: transparent; color: #e74c3c; padding: 2px 6px; font-size: 0.9rem; border: 1px solid #c0392b; }
+    .btn-icon-add { background-color: transparent; color: #3498db; padding: 2px 6px; font-size: 0.8rem; border: 1px solid #2980b9; }
 
     .sync-status-bar {
       font-size: 0.8rem;
@@ -178,7 +180,7 @@
       border-collapse: collapse;
       font-family: 'Courier New', Courier, monospace;
       width: 100%;
-      min-width: 520px;
+      min-width: 580px;
     }
     .tab-table th, .tab-table td {
       border: 1px solid #444;
@@ -189,16 +191,23 @@
     }
     .tab-table th { background-color: #1a1a1a; color: var(--accent-color); font-size: 0.8rem; }
     
-    /* 弦選択プルダウン */
+    /* 弦操作コントロール部分 */
+    .string-control-td {
+      white-space: nowrap;
+      padding: 2px 4px !important;
+      background: #181818;
+      width: 90px;
+    }
     .string-select {
       background: #111;
       color: var(--primary-color);
-      border: none;
+      border: 1px solid #333;
       font-weight: bold;
       font-size: 0.85rem;
       text-align: center;
       padding: 2px 0;
-      width: 100%;
+      width: 45px;
+      border-radius: 4px;
     }
 
     /* Tab入力欄 ＆ ゴースト（前パート透過表示） */
@@ -316,8 +325,13 @@
 </div>
 
 <script>
-// 🔗 GASのWebアプリURL (更新完了)
+// 🔗 GASのWebアプリURL
 const GAS_API_URL = "https://script.google.com/macros/s/AKfycby_ryGNAlu3Z8K_5Qd2IDWNQmnEst0zDvEVCcu2ybQB-Fxbz3pOo690gK-kdCEzzwRt/exec";
+
+// 🎼 #（シャープ）のみで構成した音階リスト
+const NOTE_OPTIONS = [
+  "e", "E", "D#", "D", "C#", "C", "B", "A#", "A", "G#", "G", "F#", "F"
+];
 
 // 📦 アプリデータ構造
 let appData = {
@@ -424,20 +438,19 @@ function collectFormData() {
       const partId = pCard.dataset.partId;
       const partName = pCard.querySelector('.part-name-input').value;
 
-      // 弦のチューニング
-      const stringSelects = pCard.querySelectorAll('.string-select');
+      const rows = pCard.querySelectorAll('tbody tr');
       const tuning = [];
-      for (const sSel of stringSelects) {
-        tuning.push(sSel.value);
-      }
-
-      // Tabデータ (弦 × 8ステップ)
       const grid = {};
-      for (let sIdx = 0; sIdx < tuning.length; sIdx++) {
-        grid[sIdx] = [];
+
+      for (let rIdx = 0; rIdx < rows.length; rIdx++) {
+        const row = rows[rIdx];
+        const stringSelect = row.querySelector('.string-select');
+        tuning.push(stringSelect ? stringSelect.value : "E");
+
+        grid[rIdx] = [];
         for (let step = 0; step < 8; step++) {
-          const input = pCard.querySelector(`.tab-input[data-string="${sIdx}"][data-step="${step}"]`);
-          grid[sIdx].push(input ? input.value : "-");
+          const input = row.querySelector(`.tab-input[data-step="${step}"]`);
+          grid[rIdx].push(input ? input.value : "-");
         }
       }
 
@@ -592,7 +605,7 @@ function renderSectionUI(sec) {
       <table class="tab-table">
         <thead>
           <tr>
-            <th style="width:50px;">Chord</th>
+            <th style="width:90px;">Chord</th>
             ${chordThs}
           </tr>
         </thead>
@@ -625,6 +638,22 @@ function renderSectionUI(sec) {
 }
 
 /**
+ * 弦音階（チューニング）の <option> タグ群を動的に生成するヘルパー関数
+ */
+function createNoteOptionsHtml(selectedNote) {
+  let html = "";
+  let options = [...NOTE_OPTIONS];
+  if (selectedNote && !options.includes(selectedNote)) {
+    options.unshift(selectedNote);
+  }
+  for (const note of options) {
+    const isSelected = (note === selectedNote) ? 'selected' : '';
+    html += `<option value="${note}" ${isSelected}>${note}</option>`;
+  }
+  return html;
+}
+
+/**
  * パート (gt1, gt2等) UIレンダリング
  */
 function renderPartUI(partsContainer, part, prevPart = null) {
@@ -637,45 +666,14 @@ function renderPartUI(partsContainer, part, prevPart = null) {
 
   let tabRowsHtml = "";
   for (let sIdx = 0; sIdx < tuning.length; sIdx++) {
-    let tds = "";
-    for (let step = 0; step < 8; step++) {
-      const val = (part.grid && part.grid[sIdx] && part.grid[sIdx][step]) ? part.grid[sIdx][step] : "-";
-      
-      // ゴースト機能（前パートのフレット値を薄っすら背景表示）
-      let ghostVal = "";
-      if (prevPart && prevPart.grid && prevPart.grid[sIdx] && prevPart.grid[sIdx][step]) {
-        ghostVal = prevPart.grid[sIdx][step];
-        if (ghostVal === "-") ghostVal = "";
-      }
-
-      tds += `
-        <td>
-          <div class="tab-input-wrapper">
-            <div class="tab-ghost">${ghostVal}</div>
-            <input type="text" class="tab-input" data-string="${sIdx}" data-step="${step}" value="${val}" oninput="updateGhostGuide(this)">
-          </div>
-        </td>
-      `;
-    }
-
-    tabRowsHtml += `
-      <tr>
-        <td style="width:50px;">
-          <select class="string-select">
-            ${['e','B','G','D','A','E','C','D#','F#'].map(note => `<option value="${note}" ${note === tuning[sIdx] ? 'selected' : ''}>${note}</option>`).join('')}
-          </select>
-        </td>
-        ${tds}
-      </tr>
-    `;
+    tabRowsHtml += createStringRowHtml(sIdx, tuning[sIdx], part, prevPart);
   }
 
   partCard.innerHTML = `
     <div class="part-header">
       <div>
         ＜<input type="text" class="part-name-input" value="${part.name || 'gt1'}">＞
-        <button type="button" class="btn-secondary btn-sm" onclick="addString('${partId}')">＋ 弦追加</button>
-        <button type="button" class="btn-secondary btn-sm" onclick="removeString('${partId}')">－ 弦削除</button>
+        <button type="button" class="btn-secondary btn-sm" onclick="appendStringBottom('${partId}')">＋ 最下部に弦追加</button>
       </div>
       <button type="button" class="btn-danger btn-sm" onclick="this.closest('.part-card').remove()">パート削除</button>
     </div>
@@ -690,6 +688,45 @@ function renderPartUI(partsContainer, part, prevPart = null) {
   `;
 
   partsContainer.appendChild(partCard);
+}
+
+/**
+ * 単一の弦の行（tr）HTML生成
+ */
+function createStringRowHtml(sIdx, stringNote, part, prevPart) {
+  let tds = "";
+  for (let step = 0; step < 8; step++) {
+    const val = (part && part.grid && part.grid[sIdx] && part.grid[sIdx][step]) ? part.grid[sIdx][step] : "-";
+    
+    // ゴースト機能（前パートのフレット値を薄っすら背景表示）
+    let ghostVal = "";
+    if (prevPart && prevPart.grid && prevPart.grid[sIdx] && prevPart.grid[sIdx][step]) {
+      ghostVal = prevPart.grid[sIdx][step];
+      if (ghostVal === "-") ghostVal = "";
+    }
+
+    tds += `
+      <td>
+        <div class="tab-input-wrapper">
+          <div class="tab-ghost">${ghostVal}</div>
+          <input type="text" class="tab-input" data-step="${step}" value="${val}" oninput="updateGhostGuide(this)">
+        </div>
+      </td>
+    `;
+  }
+
+  return `
+    <tr>
+      <td class="string-control-td">
+        <button type="button" class="btn-icon-danger" onclick="removeSpecificRow(this)" title="この弦を削除">✕</button>
+        <select class="string-select">
+          ${createNoteOptionsHtml(stringNote)}
+        </select>
+        <button type="button" class="btn-icon-add" onclick="insertStringRow(this)" title="ここに弦を挿入">＋</button>
+      </td>
+      ${tds}
+    </tr>
+  `;
 }
 
 /**
@@ -721,17 +758,17 @@ function addPartToSection(secId) {
     grid: {}
   };
 
-  // 一つ前のパートを取得してゴースト用に利用
   let prevPartData = null;
   if (existingParts.length > 0) {
     const lastPartCard = existingParts[existingParts.length - 1];
     prevPartData = { grid: {} };
-    const inputs = lastPartCard.querySelectorAll('.tab-input');
-    for (const inp of inputs) {
-      const s = inp.dataset.string;
-      const st = inp.dataset.step;
-      if (!prevPartData.grid[s]) prevPartData.grid[s] = [];
-      prevPartData.grid[s][st] = inp.value;
+    const rows = lastPartCard.querySelectorAll('tbody tr');
+    for (let rIdx = 0; rIdx < rows.length; rIdx++) {
+      const inputs = rows[rIdx].querySelectorAll('.tab-input');
+      prevPartData.grid[rIdx] = [];
+      for (const inp of inputs) {
+        prevPartData.grid[rIdx].push(inp.value);
+      }
     }
   }
 
@@ -739,45 +776,47 @@ function addPartToSection(secId) {
 }
 
 /**
- * 弦の追加
+ * 任意の場所に弦を挿入するモーダル／ダイアログ制御
  */
-function addString(partId) {
-  const pCard = document.querySelector(`.part-card[data-part-id="${partId}"]`);
-  const tbody = pCard.querySelector('tbody');
-  const sIdx = tbody.querySelectorAll('tr').length;
+function insertStringRow(btnEl) {
+  const tr = btnEl.closest('tr');
+  const action = prompt("弦の挿入位置を選んでください:\n 1 : この弦の上に追加\n 2 : この弦の下に追加", "2");
 
-  let tds = "";
-  for (let step = 0; step < 8; step++) {
-    tds += `
-      <td>
-        <div class="tab-input-wrapper">
-          <div class="tab-ghost"></div>
-          <input type="text" class="tab-input" data-string="${sIdx}" data-step="${step}" value="-">
-        </div>
-      </td>
-    `;
+  if (action === "1" || action === "2") {
+    const newTr = document.createElement('tr');
+    newTr.innerHTML = createStringRowHtml(0, "E", null, null);
+    
+    if (action === "1") {
+      tr.parentNode.insertBefore(newTr, tr);
+    } else {
+      tr.parentNode.insertBefore(newTr, tr.nextSibling);
+    }
   }
-
-  const tr = document.createElement('tr');
-  tr.innerHTML = `
-    <td style="width:50px;">
-      <select class="string-select">
-        ${['e','B','G','D','A','E','C','D#','F#'].map(note => `<option value="${note}">${note}</option>`).join('')}
-      </select>
-    </td>
-    ${tds}
-  `;
-  tbody.appendChild(tr);
 }
 
 /**
- * 弦の削除
+ * 最下部に弦を追加
  */
-function removeString(partId) {
+function appendStringBottom(partId) {
   const pCard = document.querySelector(`.part-card[data-part-id="${partId}"]`);
-  const trs = pCard.querySelectorAll('tbody tr');
-  if (trs.length > 1) {
-    trs[trs.length - 1].remove();
+  const tbody = pCard.querySelector('tbody');
+  const newTr = document.createElement('tr');
+  newTr.innerHTML = createStringRowHtml(0, "E", null, null);
+  tbody.appendChild(newTr);
+}
+
+/**
+ * ピンポイントで特定の弦行を削除
+ */
+function removeSpecificRow(btnEl) {
+  const tr = btnEl.closest('tr');
+  const tbody = tr.parentNode;
+  if (tbody.querySelectorAll('tr').length <= 1) {
+    alert("パートには少なくとも1本の弦が必要です");
+    return;
+  }
+  if (confirm("この弦を削除しますか？")) {
+    tr.remove();
   }
 }
 
