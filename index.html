@@ -25,7 +25,7 @@
       padding: 0;
       padding-top: 60px; /* 固定ヘッダー分の余白 */
       padding-bottom: 40px;
-      user-select: none; /* ドラッグ選択時のテキスト選択事故を防止 */
+      user-select: none;
     }
     .container {
       max-width: 750px;
@@ -72,6 +72,7 @@
     .btn-sm { padding: 4px 8px; font-size: 0.8rem; }
     .btn-icon-danger { background-color: transparent; color: #e74c3c; padding: 2px 6px; font-size: 0.9rem; border: 1px solid #c0392b; }
     .btn-icon-add { background-color: transparent; color: #3498db; padding: 2px 6px; font-size: 0.8rem; border: 1px solid #2980b9; }
+    .btn-auto-chord { background-color: #8e44ad; color: #fff; padding: 2px 6px; font-size: 0.75rem; border-radius: 4px; margin-top: 2px; }
 
     .sync-status-bar {
       font-size: 0.8rem;
@@ -238,7 +239,6 @@
       user-select: text;
     }
     
-    /* 🔲 ドラッグ選択ハイライト表示 */
     td.selected-cell {
       background-color: var(--select-bg) !important;
       outline: 2px solid var(--select-border);
@@ -343,6 +343,9 @@ const NOTE_OPTIONS = [
   "e", "E", "D#", "D", "C#", "C", "B", "A#", "A", "G#", "G", "F#", "F"
 ];
 
+// 12半音スケール（計算用）
+const CHROMATIC_SCALE = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+
 // 📦 アプリデータ構造
 let appData = {
   songs: [], // 全楽曲データ配列
@@ -356,7 +359,7 @@ const DEFAULT_TUNING = ["e", "B", "G", "D", "A", "E"]; // 標準1〜6弦
 let isMouseDown = false;
 let startCell = null;
 let currentSelection = [];
-let copiedMatrix = []; // コピーされた2次元データの配列
+let copiedMatrix = [];
 
 // 起動時の初期処理
 document.addEventListener('DOMContentLoaded', () => {
@@ -617,7 +620,10 @@ function renderSectionUI(sec) {
       <table class="tab-table">
         <thead>
           <tr>
-            <th style="width:90px;">Chord</th>
+            <th style="width:90px;">
+              Chord
+              <br><button type="button" class="btn-auto-chord" onclick="detectAndSetChords('${secId}')" title="Tabからコードを自動入力">🪄 自動判定</button>
+            </th>
             ${chordThs}
           </tr>
         </thead>
@@ -756,6 +762,97 @@ function formatCapoInput(inputEl) {
 }
 
 /**
+ * 🪄 Tab譜から和音（コード名）を自動解析してChord枠に書き込む機能
+ */
+function detectAndSetChords(secId) {
+  const sCard = document.querySelector(`.section-card[data-section-id="${secId}"]`);
+  if (!sCard) return;
+
+  const capoVal = parseInt(document.getElementById('song-capo').value || "0", 10);
+  const partCards = sCard.querySelectorAll('.part-card');
+  const chordInputs = sCard.querySelectorAll('.chord-input');
+
+  for (let step = 0; step < 8; step++) {
+    const pitchSet = new Set();
+    let lowestPitchVal = 999;
+    let bassNoteName = "";
+
+    for (const pCard of partCards) {
+      const rows = pCard.querySelectorAll('tbody tr');
+      for (const row of rows) {
+        const stringNote = row.querySelector('.string-select').value.toUpperCase();
+        const inp = row.querySelector(`.tab-input[data-step="${step}"]`);
+        if (!inp || !inp.value || inp.value === "-") continue;
+
+        let fretVal = NaN;
+        const match = inp.value.match(/^(\d+)/);
+        if (match) {
+          fretVal = parseInt(match[1], 10);
+        }
+
+        if (!isNaN(fretVal)) {
+          // チューニング音階インデックスの取得
+          let openIndex = CHROMATIC_SCALE.indexOf(stringNote);
+          if (openIndex === -1) {
+            if (stringNote === "E") openIndex = 4;
+            else openIndex = 0;
+          }
+
+          // 絶対音高とピッチクラスの計算
+          const absolutePitch = openIndex + fretVal + capoVal;
+          const noteName = CHROMATIC_SCALE[absolutePitch % 12];
+          pitchSet.add(noteName);
+
+          if (absolutePitch < lowestPitchVal) {
+            lowestPitchVal = absolutePitch;
+            bassNoteName = noteName;
+          }
+        }
+      }
+    }
+
+    if (pitchSet.size > 0) {
+      const detectedChord = analyzeChordFromNotes(Array.from(pitchSet), bassNoteName);
+      if (chordInputs[step]) {
+        chordInputs[step].value = detectedChord;
+      }
+    }
+  }
+}
+
+/**
+ * 構成音（音名配列）からコードネームを推論するアルゴリズム
+ */
+function analyzeChordFromNotes(notes, bassNote) {
+  if (notes.length === 0) return "";
+  if (notes.length === 1) return notes[0];
+
+  // 音程差（インターバル）定義
+  const intervalMap = {
+    "4": "sus4", "3-7": "m", "4-7": "", "3-6": "dim", "4-8": "aug",
+    "4-7-10": "7", "4-7-11": "maj7", "3-7-10": "m7", "3-6-10": "m7(b5)",
+    "4-7-9": "6", "3-7-9": "m6", "4-7-2": "add9"
+  };
+
+  for (const root of notes) {
+    const rootIdx = CHROMATIC_SCALE.indexOf(root);
+    const intervals = notes
+      .map(n => (CHROMATIC_SCALE.indexOf(n) - rootIdx + 12) % 12)
+      .filter(i => i !== 0)
+      .sort((a,b) => a - b);
+
+    const key = intervals.join("-");
+    if (intervalMap[key] !== undefined) {
+      const chordName = root + intervalMap[key];
+      return (bassNote && bassNote !== root) ? `${chordName}/${bassNote}` : chordName;
+    }
+  }
+
+  // 判定できない場合は単体音を連結表示
+  return notes.join("");
+}
+
+/**
  * ゴースト表示のリアルタイム更新
  */
 function updateGhostGuide(inputEl) {
@@ -769,7 +866,7 @@ function updateGhostGuide(inputEl) {
 }
 
 /* =========================================================
-   🔲 ドラッグ選択 ＆ コピーペースト処理 (グローバルイベント)
+   🔲 ドラッグ選択 ＆ コピーペースト処理
    ========================================================= */
 
 function setupGlobalCopyPasteEvents() {
@@ -799,7 +896,6 @@ function setupGlobalCopyPasteEvents() {
     isMouseDown = false;
   });
 
-  // Ctrl+C / Ctrl+V イベント補足
   document.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
       if (currentSelection.length > 0) {
@@ -849,18 +945,13 @@ function selectCellRange(cellA, cellB) {
   }
 }
 
-/**
- * 選択範囲の文字列を2次元配列にコピー
- */
 function copySelectionToClipboard() {
   copiedMatrix = [];
   if (currentSelection.length === 0) return;
 
   const firstTd = currentSelection[0];
   const tbody = firstTd.closest('tbody');
-  const rows = Array.from(tbody.querySelectorAll('tr'));
 
-  // 選択されたセルを行ごとにグループ化
   const rowMap = {};
   for (const td of currentSelection) {
     const rIdx = td.closest('tr').rowIndex;
@@ -879,13 +970,9 @@ function copySelectionToClipboard() {
   }
 }
 
-/**
- * コピーされたデータをペースト先セルを起点にして書き込み
- */
 function pasteClipboardToSelection() {
   if (copiedMatrix.length === 0 || currentSelection.length === 0) return;
 
-  // 起点となる左上のセルを取得
   const startTd = currentSelection[0];
   const tbody = startTd.closest('tbody');
   const rows = Array.from(tbody.querySelectorAll('tr'));
