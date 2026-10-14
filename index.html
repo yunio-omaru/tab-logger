@@ -14,6 +14,8 @@
       --text-muted: #aaaaaa;
       --accent-color: #f39c12;
       --border-color: #3e3e3e;
+      --select-bg: rgba(74, 144, 226, 0.4);
+      --select-border: #4a90e2;
     }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -23,6 +25,7 @@
       padding: 0;
       padding-top: 60px; /* 固定ヘッダー分の余白 */
       padding-bottom: 40px;
+      user-select: none; /* ドラッグ選択時のテキスト選択事故を防止 */
     }
     .container {
       max-width: 750px;
@@ -210,7 +213,7 @@
       border-radius: 4px;
     }
 
-    /* Tab入力欄 ＆ ゴースト（前パート透過表示） */
+    /* Tab入力欄 ＆ ゴースト ＆ セル選択ハイライト */
     .tab-input-wrapper { position: relative; width: 100%; height: 28px; }
     .tab-ghost {
       position: absolute;
@@ -232,9 +235,16 @@
       font-size: 0.9rem;
       font-weight: bold;
       box-sizing: border-box;
+      user-select: text;
     }
-    .tab-input:focus { background-color: rgba(255,255,255,0.15); outline: 1px solid var(--primary-color); }
     
+    /* 🔲 ドラッグ選択ハイライト表示 */
+    td.selected-cell {
+      background-color: var(--select-bg) !important;
+      outline: 2px solid var(--select-border);
+      z-index: 5;
+    }
+
     .ascii-output {
       font-family: monospace;
       white-space: pre;
@@ -342,9 +352,16 @@ let appData = {
 let currentSongId = null; // 現在編集中の曲ID
 const DEFAULT_TUNING = ["e", "B", "G", "D", "A", "E"]; // 標準1〜6弦
 
+// 🔲 ドラッグ選択＆コピーペースト管理変数
+let isMouseDown = false;
+let startCell = null;
+let currentSelection = [];
+let copiedMatrix = []; // コピーされた2次元データの配列
+
 // 起動時の初期処理
 document.addEventListener('DOMContentLoaded', () => {
   loadFromSpreadsheet();
+  setupGlobalCopyPasteEvents();
 });
 
 /**
@@ -398,7 +415,6 @@ async function executeSave() {
 function collectFormData() {
   if (!currentSongId) return;
 
-  // 現在の曲の基本情報収集
   let song = null;
   for (const s of appData.songs) {
     if (s.id === currentSongId) {
@@ -414,7 +430,6 @@ function collectFormData() {
   song.tuning = document.getElementById('song-tuning').value;
   song.capo = document.getElementById('song-capo').value;
 
-  // セクション情報の収集
   const sectionCards = document.querySelectorAll('.section-card');
   const sections = [];
 
@@ -423,14 +438,12 @@ function collectFormData() {
     const secName = sCard.querySelector('.section-name').value;
     const memo = sCard.querySelector('.section-memo').value;
 
-    // コードネーム
     const chordInputs = sCard.querySelectorAll('.chord-input');
     const chords = [];
     for (const cIn of chordInputs) {
       chords.push(cIn.value);
     }
 
-    // パート収集
     const partCards = sCard.querySelectorAll('.part-card');
     const parts = [];
 
@@ -588,7 +601,6 @@ function renderSectionUI(sec) {
   card.className = "section-card";
   card.dataset.sectionId = secId;
 
-  // コード行
   let chordThs = "";
   for (let i = 0; i < 8; i++) {
     const val = (sec.chords && sec.chords[i]) ? sec.chords[i] : "";
@@ -612,7 +624,6 @@ function renderSectionUI(sec) {
       </table>
     </div>
 
-    <!-- パート（gt1, gt2, key等）コンテナ -->
     <div class="parts-container"></div>
 
     <button type="button" class="btn-secondary btn-sm" onclick="addPartToSection('${secId}')" style="margin-top:8px;">
@@ -627,7 +638,6 @@ function renderSectionUI(sec) {
 
   secContainer.appendChild(card);
 
-  // パートの描画
   const partsContainer = card.querySelector('.parts-container');
   const parts = (sec.parts && sec.parts.length > 0) ? sec.parts : [{ id: "part_" + Date.now(), name: "gt1", tuning: [...DEFAULT_TUNING], grid: {} }];
   
@@ -698,7 +708,6 @@ function createStringRowHtml(sIdx, stringNote, part, prevPart) {
   for (let step = 0; step < 8; step++) {
     const val = (part && part.grid && part.grid[sIdx] && part.grid[sIdx][step]) ? part.grid[sIdx][step] : "-";
     
-    // ゴースト機能（前パートのフレット値を薄っすら背景表示）
     let ghostVal = "";
     if (prevPart && prevPart.grid && prevPart.grid[sIdx] && prevPart.grid[sIdx][step]) {
       ghostVal = prevPart.grid[sIdx][step];
@@ -706,7 +715,7 @@ function createStringRowHtml(sIdx, stringNote, part, prevPart) {
     }
 
     tds += `
-      <td>
+      <td class="tab-cell">
         <div class="tab-input-wrapper">
           <div class="tab-ghost">${ghostVal}</div>
           <input type="text" class="tab-input" data-step="${step}" value="${val}" onchange="formatCapoInput(this)" oninput="updateGhostGuide(this)">
@@ -736,13 +745,9 @@ function formatCapoInput(inputEl) {
   const rawVal = inputEl.value.trim();
   const capoVal = parseInt(document.getElementById('song-capo').value || "0", 10);
 
-  // Capo設定なし、あるいは空文字やハイフンの場合は補正しない
   if (capoVal <= 0 || !rawVal || rawVal === "-") return;
-
-  // すでに "1(6)" のような形式になっている場合は再計算防止
   if (/\d+\(\d+\)/.test(rawVal)) return;
 
-  // 入力された値が単純な数字（半角数値）の場合のみ適用
   const fretNum = parseInt(rawVal, 10);
   if (!isNaN(fretNum) && fretNum > 0) {
     const actualFret = fretNum + capoVal;
@@ -760,6 +765,155 @@ function updateGhostGuide(inputEl) {
     ghost.style.display = 'none';
   } else {
     ghost.style.display = 'flex';
+  }
+}
+
+/* =========================================================
+   🔲 ドラッグ選択 ＆ コピーペースト処理 (グローバルイベント)
+   ========================================================= */
+
+function setupGlobalCopyPasteEvents() {
+  document.addEventListener('mousedown', (e) => {
+    const cell = e.target.closest('td.tab-cell');
+    if (cell) {
+      isMouseDown = true;
+      startCell = cell;
+      clearSelection();
+      selectCellRange(startCell, cell);
+    } else {
+      if (!e.target.closest('.tab-table')) {
+        clearSelection();
+      }
+    }
+  });
+
+  document.addEventListener('mouseover', (e) => {
+    if (!isMouseDown || !startCell) return;
+    const cell = e.target.closest('td.tab-cell');
+    if (cell && cell.closest('tbody') === startCell.closest('tbody')) {
+      selectCellRange(startCell, cell);
+    }
+  });
+
+  document.addEventListener('mouseup', () => {
+    isMouseDown = false;
+  });
+
+  // Ctrl+C / Ctrl+V イベント補足
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+      if (currentSelection.length > 0) {
+        copySelectionToClipboard();
+      }
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+      if (currentSelection.length > 0 && copiedMatrix.length > 0) {
+        pasteClipboardToSelection();
+        e.preventDefault();
+      }
+    }
+  });
+}
+
+function clearSelection() {
+  for (const td of currentSelection) {
+    td.classList.remove('selected-cell');
+  }
+  currentSelection = [];
+}
+
+function selectCellRange(cellA, cellB) {
+  clearSelection();
+  const tbody = cellA.closest('tbody');
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+
+  const rowA = cellA.closest('tr').rowIndex;
+  const colA = cellA.cellIndex;
+  const rowB = cellB.closest('tr').rowIndex;
+  const colB = cellB.cellIndex;
+
+  const minRow = Math.min(rowA, rowB);
+  const maxRow = Math.max(rowA, rowB);
+  const minCol = Math.min(colA, colB);
+  const maxCol = Math.max(colA, colB);
+
+  for (let r = minRow; r <= maxRow; r++) {
+    const tr = rows[r];
+    for (let c = minCol; c <= maxCol; c++) {
+      const td = tr.cells[c];
+      if (td && td.classList.contains('tab-cell')) {
+        td.classList.add('selected-cell');
+        currentSelection.push(td);
+      }
+    }
+  }
+}
+
+/**
+ * 選択範囲の文字列を2次元配列にコピー
+ */
+function copySelectionToClipboard() {
+  copiedMatrix = [];
+  if (currentSelection.length === 0) return;
+
+  const firstTd = currentSelection[0];
+  const tbody = firstTd.closest('tbody');
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+
+  // 選択されたセルを行ごとにグループ化
+  const rowMap = {};
+  for (const td of currentSelection) {
+    const rIdx = td.closest('tr').rowIndex;
+    if (!rowMap[rIdx]) rowMap[rIdx] = [];
+    rowMap[rIdx].push(td);
+  }
+
+  const sortedRowKeys = Object.keys(rowMap).sort((a,b) => a - b);
+  for (const rKey of sortedRowKeys) {
+    const tds = rowMap[rKey].sort((a,b) => a.cellIndex - b.cellIndex);
+    const rowValues = tds.map(td => {
+      const inp = td.querySelector('.tab-input');
+      return inp ? inp.value : "-";
+    });
+    copiedMatrix.push(rowValues);
+  }
+}
+
+/**
+ * コピーされたデータをペースト先セルを起点にして書き込み
+ */
+function pasteClipboardToSelection() {
+  if (copiedMatrix.length === 0 || currentSelection.length === 0) return;
+
+  // 起点となる左上のセルを取得
+  const startTd = currentSelection[0];
+  const tbody = startTd.closest('tbody');
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+
+  const startRowIdx = startTd.closest('tr').rowIndex;
+  const startColIdx = startTd.cellIndex;
+
+  for (let r = 0; r < copiedMatrix.length; r++) {
+    const targetRowIdx = startRowIdx + r;
+    if (targetRowIdx >= rows.length) break;
+
+    const tr = rows[targetRowIdx];
+    const rowData = copiedMatrix[r];
+
+    for (let c = 0; c < rowData.length; c++) {
+      const targetColIdx = startColIdx + c;
+      if (targetColIdx >= tr.cells.length) break;
+
+      const td = tr.cells[targetColIdx];
+      if (td && td.classList.contains('tab-cell')) {
+        const inp = td.querySelector('.tab-input');
+        if (inp) {
+          inp.value = rowData[c];
+          formatCapoInput(inp);
+          updateGhostGuide(inp);
+        }
+      }
+    }
   }
 }
 
@@ -882,7 +1036,6 @@ function generateAsciiTab() {
     ascii += `[${sec.name}]\n`;
     if (sec.memo) ascii += `Memo: ${sec.memo}\n`;
 
-    // コード行
     if (sec.chords && sec.chords.some(c => c !== "")) {
       ascii += `Chord: |`;
       for (let i = 0; i < 8; i++) {
@@ -891,7 +1044,6 @@ function generateAsciiTab() {
       ascii += `\n`;
     }
 
-    // 各パートのTab出力
     for (const part of (sec.parts || [])) {
       ascii += `<${part.name}>\n`;
       const tuning = part.tuning || DEFAULT_TUNING;
