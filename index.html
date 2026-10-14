@@ -23,7 +23,7 @@
       color: var(--text-color);
       margin: 0;
       padding: 0;
-      padding-top: 60px; /* 固定ヘッダー分の余白 */
+      padding-top: 60px;
       padding-bottom: 40px;
       user-select: none;
     }
@@ -33,7 +33,6 @@
       padding: 12px;
       box-sizing: border-box;
     }
-    /* 📌 固定ヘッダー */
     header.fixed-header {
       position: fixed;
       top: 0;
@@ -96,7 +95,6 @@
       border: 1px solid var(--border-color);
     }
 
-    /* メインメニュー（曲一覧）用スタイル */
     .top-controls {
       display: flex;
       justify-content: space-between;
@@ -131,7 +129,6 @@
     .song-artist { font-size: 0.85rem; color: var(--text-muted); }
     .song-title-text { font-size: 1rem; font-weight: bold; color: #fff; margin-top: 2px; }
 
-    /* フォーム要素のスタイル */
     .form-group { margin-bottom: 12px; }
     .form-group label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; }
     input[type="text"], input[type="number"], select {
@@ -147,7 +144,6 @@
     .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .grid-3col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
 
-    /* セクション & パート Card */
     .section-card {
       background: var(--card-inner-bg);
       border-radius: 8px;
@@ -175,7 +171,6 @@
       text-align: center;
     }
 
-    /* Tab 譜テーブル */
     .tab-grid-wrapper {
       overflow-x: auto;
       padding-bottom: 8px;
@@ -195,7 +190,6 @@
     }
     .tab-table th { background-color: #1a1a1a; color: var(--accent-color); font-size: 0.8rem; }
     
-    /* 弦操作コントロール部分 */
     .string-control-td {
       white-space: nowrap;
       padding: 2px 4px !important;
@@ -214,7 +208,6 @@
       border-radius: 4px;
     }
 
-    /* Tab入力欄 ＆ ゴースト ＆ セル選択ハイライト */
     .tab-input-wrapper { position: relative; width: 100%; height: 28px; }
     .tab-ghost {
       position: absolute;
@@ -260,18 +253,14 @@
 </head>
 <body>
 
-<!-- 📌 固定ヘッダー -->
 <header class="fixed-header">
   <div class="header-title" onclick="showListPage()" style="cursor:pointer;">Tab & Chord Logger</div>
-  <!-- ⚙️ onclick によるダイレクト発火 -->
   <button id="btn-save" class="btn-sync" onclick="executeSave()">💾 保存</button>
 </header>
 
 <div class="container">
-  <!-- 🎛️ 同期ステータスバー -->
   <div id="sync-status" class="sync-status-bar">🔄 接続確認中...</div>
 
-  <!-- 🏠 1. メインメニュー（曲一覧画面） -->
   <div id="page-list" class="page active">
     <div class="top-controls">
       <button class="btn-add" onclick="createNewSong()">＋ 追加</button>
@@ -280,7 +269,6 @@
     <ul id="song-list-container" class="song-list"></ul>
   </div>
 
-  <!-- ✏️ 2. 楽曲編集・詳細画面 -->
   <div id="page-edit" class="page">
     <button class="btn-secondary" onclick="showListPage()" style="margin-bottom: 12px;">← 曲一覧に戻る</button>
     <div class="app-content">
@@ -313,14 +301,12 @@
 
       <hr style="border: 0.5px solid var(--border-color); margin: 20px 0;">
 
-      <!-- セクションコンテナ -->
       <div id="sections-container"></div>
 
       <button type="button" class="btn-add" onclick="addSection()" style="width: 100%; padding: 10px; margin-top: 10px;">
         新しいセクション追加
       </button>
 
-      <!-- テキスト・TuxGuitar生成エリア -->
       <div style="margin-top: 25px;">
         <button type="button" class="btn-secondary" onclick="generateAsciiTab()" style="width: 100%;">
           📄 テキスト生成 (TuxGuitar / ASCII形式)
@@ -335,41 +321,32 @@
 </div>
 
 <script>
-// 🔗 GASのWebアプリURL
 const GAS_API_URL = "https://script.google.com/macros/s/AKfycby_ryGNAlu3Z8K_5Qd2IDWNQmnEst0zDvEVCcu2ybQB-Fxbz3pOo690gK-kdCEzzwRt/exec";
 
-// 🎼 #（シャープ）のみで構成した音階リスト
 const NOTE_OPTIONS = [
   "e", "E", "D#", "D", "C#", "C", "B", "A#", "A", "G#", "G", "F#", "F"
 ];
 
-// 12半音スケール（計算用）
 const CHROMATIC_SCALE = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
-// 📦 アプリデータ構造
 let appData = {
-  songs: [], // 全楽曲データ配列
+  songs: [],
   master: {}
 };
 
-let currentSongId = null; // 現在編集中の曲ID
-const DEFAULT_TUNING = ["e", "B", "G", "D", "A", "E"]; // 標準1〜6弦
+let currentSongId = null;
+const DEFAULT_TUNING = ["e", "B", "G", "D", "A", "E"];
 
-// 🔲 ドラッグ選択＆コピーペースト管理変数
 let isMouseDown = false;
 let startCell = null;
 let currentSelection = [];
 let copiedMatrix = [];
 
-// 起動時の初期処理
 document.addEventListener('DOMContentLoaded', () => {
   loadFromSpreadsheet();
   setupGlobalCopyPasteEvents();
 });
 
-/**
- * 📥 スプレッドシートからデータを読み込む (GET)
- */
 async function loadFromSpreadsheet() {
   const statusLabel = document.getElementById('sync-status');
   statusLabel.innerText = "🔄 スプレッドシートからデータを同期中...";
@@ -393,9 +370,6 @@ async function loadFromSpreadsheet() {
   }
 }
 
-/**
- * 💾 保存ボタンが押された時の安全な中継関数
- */
 async function executeSave() {
   const saveBtn = document.getElementById('btn-save');
   saveBtn.disabled = true;
@@ -412,9 +386,6 @@ async function executeSave() {
   }
 }
 
-/**
- * 📝 画面の入力値を appData に集約する
- */
 function collectFormData() {
   if (!currentSongId) return;
 
@@ -490,16 +461,10 @@ function collectFormData() {
   song.sections = sections;
 }
 
-/**
- * 💻 データを画面に描写する
- */
 function renderApp() {
   renderSongList();
 }
 
-/**
- * 曲一覧リストを描画・検索フィルター
- */
 function renderSongList() {
   const listEl = document.getElementById('song-list-container');
   const keyword = document.getElementById('search-box').value.toLowerCase();
@@ -529,9 +494,6 @@ function filterSongs() {
   renderSongList();
 }
 
-/**
- * 画面切り替え：一覧画面を表示
- */
 function showListPage() {
   collectFormData();
   document.getElementById('page-list').classList.add('active');
@@ -539,9 +501,6 @@ function showListPage() {
   renderSongList();
 }
 
-/**
- * 新規楽曲の作成
- */
 function createNewSong() {
   const newSong = {
     id: "song_" + Date.now(),
@@ -557,9 +516,6 @@ function createNewSong() {
   addSection("Aメロ");
 }
 
-/**
- * 曲の削除
- */
 function deleteSong(songId) {
   if (confirm("この楽曲を削除しますか？")) {
     appData.songs = appData.songs.filter(s => s.id !== songId);
@@ -567,9 +523,6 @@ function deleteSong(songId) {
   }
 }
 
-/**
- * 編集画面を開く
- */
 function openEditPage(songId) {
   currentSongId = songId;
   const song = appData.songs.find(s => s.id === songId);
@@ -593,9 +546,6 @@ function openEditPage(songId) {
   document.getElementById('ascii-output-container').style.display = 'none';
 }
 
-/**
- * セクションのUIレンダリング
- */
 function renderSectionUI(sec) {
   const secContainer = document.getElementById('sections-container');
   const secId = sec.id || "sec_" + Date.now() + "_" + Math.random().toString(36).substr(2, 4);
@@ -653,9 +603,6 @@ function renderSectionUI(sec) {
   }
 }
 
-/**
- * 弦音階（チューニング）の <option> タグ群を動的に生成するヘルパー関数
- */
 function createNoteOptionsHtml(selectedNote) {
   let html = "";
   let options = [...NOTE_OPTIONS];
@@ -669,9 +616,6 @@ function createNoteOptionsHtml(selectedNote) {
   return html;
 }
 
-/**
- * パート (gt1, gt2等) UIレンダリング
- */
 function renderPartUI(partsContainer, part, prevPart = null) {
   const partId = part.id || "part_" + Date.now() + "_" + Math.random().toString(36).substr(2, 4);
   const partCard = document.createElement('div');
@@ -706,9 +650,6 @@ function renderPartUI(partsContainer, part, prevPart = null) {
   partsContainer.appendChild(partCard);
 }
 
-/**
- * 単一の弦の行（tr）HTML生成
- */
 function createStringRowHtml(sIdx, stringNote, part, prevPart) {
   let tds = "";
   for (let step = 0; step < 8; step++) {
@@ -744,9 +685,6 @@ function createStringRowHtml(sIdx, stringNote, part, prevPart) {
   `;
 }
 
-/**
- * 🎵 Capo設定に応じたフレット番号自動補正機能
- */
 function formatCapoInput(inputEl) {
   const rawVal = inputEl.value.trim();
   const capoVal = parseInt(document.getElementById('song-capo').value || "0", 10);
@@ -762,7 +700,7 @@ function formatCapoInput(inputEl) {
 }
 
 /**
- * 🪄 Tab譜から和音（コード名）を自動解析してChord枠に書き込む機能
+ * 🪄 高度なコード判定アルゴリズム（オンコード・テンション・変形フォーム対応）
  */
 function detectAndSetChords(secId) {
   const sCard = document.querySelector(`.section-card[data-section-id="${secId}"]`);
@@ -791,14 +729,12 @@ function detectAndSetChords(secId) {
         }
 
         if (!isNaN(fretVal)) {
-          // チューニング音階インデックスの取得
           let openIndex = CHROMATIC_SCALE.indexOf(stringNote);
           if (openIndex === -1) {
             if (stringNote === "E") openIndex = 4;
             else openIndex = 0;
           }
 
-          // 絶対音高とピッチクラスの計算
           const absolutePitch = openIndex + fretVal + capoVal;
           const noteName = CHROMATIC_SCALE[absolutePitch % 12];
           pitchSet.add(noteName);
@@ -812,7 +748,7 @@ function detectAndSetChords(secId) {
     }
 
     if (pitchSet.size > 0) {
-      const detectedChord = analyzeChordFromNotes(Array.from(pitchSet), bassNoteName);
+      const detectedChord = analyzeAdvancedChord(Array.from(pitchSet), bassNoteName);
       if (chordInputs[step]) {
         chordInputs[step].value = detectedChord;
       }
@@ -821,40 +757,69 @@ function detectAndSetChords(secId) {
 }
 
 /**
- * 構成音（音名配列）からコードネームを推論するアルゴリズム
+ * 🎵 構成音パターンテーブルと完全合致判定
  */
-function analyzeChordFromNotes(notes, bassNote) {
+function analyzeAdvancedChord(notes, bassNote) {
   if (notes.length === 0) return "";
   if (notes.length === 1) return notes[0];
 
-  // 音程差（インターバル）定義
-  const intervalMap = {
-    "4": "sus4", "3-7": "m", "4-7": "", "3-6": "dim", "4-8": "aug",
-    "4-7-10": "7", "4-7-11": "maj7", "3-7-10": "m7", "3-6-10": "m7(b5)",
-    "4-7-9": "6", "3-7-9": "m6", "4-7-2": "add9"
-  };
+  // 拡張された和音構造マッピング（度数の組み合わせ）
+  const chordPatterns = [
+    { suffix: "", intervals: [4, 7] },            // Major
+    { suffix: "m", intervals: [3, 7] },           // Minor
+    { suffix: "7", intervals: [4, 7, 10] },       // Dominant 7th
+    { suffix: "maj7", intervals: [4, 7, 11] },    // Major 7th
+    { suffix: "m7", intervals: [3, 7, 10] },      // Minor 7th
+    { suffix: "mM7", intervals: [3, 7, 11] },     // Minor Major 7th
+    { suffix: "add9", intervals: [2, 4, 7] },     // Add 9
+    { suffix: "9", intervals: [2, 4, 7, 10] },    // Dominant 9th
+    { suffix: "maj9", intervals: [2, 4, 7, 11] }, // Major 9th
+    { suffix: "m9", intervals: [2, 3, 7, 10] },   // Minor 9th
+    { suffix: "sus4", intervals: [5, 7] },        // Sus4
+    { suffix: "7sus4", intervals: [5, 7, 10] },   // 7sus4
+    { suffix: "sus2", intervals: [2, 7] },        // Sus2
+    { suffix: "dim", intervals: [3, 6] },         // Diminished
+    { suffix: "dim7", intervals: [3, 6, 9] },     // Diminished 7th
+    { suffix: "m7(b5)", intervals: [3, 6, 10] }, // Half Diminished
+    { suffix: "aug", intervals: [4, 8] },         // Augmented
+    { suffix: "6", intervals: [4, 7, 9] },        // Major 6th
+    { suffix: "m6", intervals: [3, 7, 9] },       // Minor 6th
+    { suffix: "5", intervals: [7] }               // Power Chord
+  ];
+
+  let bestMatch = null;
 
   for (const root of notes) {
     const rootIdx = CHROMATIC_SCALE.indexOf(root);
-    const intervals = notes
+    const relativeIntervals = notes
       .map(n => (CHROMATIC_SCALE.indexOf(n) - rootIdx + 12) % 12)
       .filter(i => i !== 0)
       .sort((a,b) => a - b);
 
-    const key = intervals.join("-");
-    if (intervalMap[key] !== undefined) {
-      const chordName = root + intervalMap[key];
-      return (bassNote && bassNote !== root) ? `${chordName}/${bassNote}` : chordName;
+    for (const pat of chordPatterns) {
+      // インターバルが含まれているかチェック
+      const isMatch = pat.intervals.every(i => relativeIntervals.includes(i));
+      if (isMatch) {
+        bestMatch = { root, suffix: pat.suffix };
+        break;
+      }
     }
+    if (bestMatch) break;
   }
 
-  // 判定できない場合は単体音を連結表示
-  return notes.join("");
+  if (bestMatch) {
+    const baseChordName = bestMatch.root + bestMatch.suffix;
+    // ルート音と最低音（ベース音）が異なる場合はオンコード表記（例: C/G）
+    if (bassNote && bassNote !== bestMatch.root) {
+      return `${baseChordName}/${bassNote}`;
+    }
+    return baseChordName;
+  }
+
+  // 和音パターンに完全一致しない特殊コード・テンションの場合の補完
+  return notes.join(",");
 }
 
-/**
- * ゴースト表示のリアルタイム更新
- */
 function updateGhostGuide(inputEl) {
   const wrapper = inputEl.closest('.tab-input-wrapper');
   const ghost = wrapper.querySelector('.tab-ghost');
@@ -864,10 +829,6 @@ function updateGhostGuide(inputEl) {
     ghost.style.display = 'flex';
   }
 }
-
-/* =========================================================
-   🔲 ドラッグ選択 ＆ コピーペースト処理
-   ========================================================= */
 
 function setupGlobalCopyPasteEvents() {
   document.addEventListener('mousedown', (e) => {
@@ -1004,9 +965,6 @@ function pasteClipboardToSelection() {
   }
 }
 
-/**
- * セクションへ新しいパートを追加
- */
 function addPartToSection(secId) {
   const sCard = document.querySelector(`.section-card[data-section-id="${secId}"]`);
   const partsContainer = sCard.querySelector('.parts-container');
@@ -1037,9 +995,6 @@ function addPartToSection(secId) {
   renderPartUI(partsContainer, newPart, prevPartData);
 }
 
-/**
- * 任意の場所に弦を挿入するダイアログ制御
- */
 function insertStringRow(btnEl) {
   const tr = btnEl.closest('tr');
   const action = prompt("弦の挿入位置を選んでください:\n 1 : この弦の上に追加\n 2 : この弦の下に追加", "2");
@@ -1056,9 +1011,6 @@ function insertStringRow(btnEl) {
   }
 }
 
-/**
- * 最下部に弦を追加
- */
 function appendStringBottom(partId) {
   const pCard = document.querySelector(`.part-card[data-part-id="${partId}"]`);
   const tbody = pCard.querySelector('tbody');
@@ -1067,9 +1019,6 @@ function appendStringBottom(partId) {
   tbody.appendChild(newTr);
 }
 
-/**
- * ピンポイントで特定の弦行を削除
- */
 function removeSpecificRow(btnEl) {
   const tr = btnEl.closest('tr');
   const tbody = tr.parentNode;
@@ -1082,9 +1031,6 @@ function removeSpecificRow(btnEl) {
   }
 }
 
-/**
- * セクション追加
- */
 function addSection(defaultName = "新規セクション") {
   const newSec = {
     id: "sec_" + Date.now(),
@@ -1096,9 +1042,6 @@ function addSection(defaultName = "新規セクション") {
   renderSectionUI(newSec);
 }
 
-/**
- * セクション削除
- */
 function removeSection(secId) {
   const card = document.querySelector(`.section-card[data-section-id="${secId}"]`);
   if (card && confirm("このセクションを削除しますか？")) {
@@ -1106,9 +1049,6 @@ function removeSection(secId) {
   }
 }
 
-/**
- * TuxGuitar / ASCII形式テキスト出力
- */
 function generateAsciiTab() {
   collectFormData();
   const song = appData.songs.find(s => s.id === currentSongId);
@@ -1158,9 +1098,6 @@ function generateAsciiTab() {
   }).catch(() => {});
 }
 
-/**
- * 📤 スプレッドシートへデータを書き込む (POST)
- */
 async function saveToSpreadsheet() {
   const statusLabel = document.getElementById('sync-status');
   statusLabel.innerText = "💾 クラウドに保存中...";
