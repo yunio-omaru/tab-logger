@@ -70,7 +70,6 @@
     button:active { opacity: 0.7; }
     .btn-sync { background-color: #27ae60; color: white; }
     .btn-github { background-color: #24292e; color: white; border: 1px solid #444; }
-    .btn-backup { background-color: #8e44ad; color: white; }
     .btn-secondary { background-color: #333; color: #fff; border: 1px solid var(--border-color); }
     .btn-add { background-color: var(--primary-color); color: white; }
     .btn-danger { background-color: #c0392b; color: white; padding: 4px 8px; font-size: 0.8rem; }
@@ -268,7 +267,6 @@
       max-height: 200px;
     }
 
-    /* モーダル表示 */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -360,7 +358,6 @@
     </div>
   </div>
 
-  <!-- 📋 バックアップJSON出力表示用エリア -->
   <div id="backup-output-container" style="display: none; margin-top: 20px;" class="app-content">
     <div style="display: flex; justify-content: space-between; align-items: center;">
       <span style="font-weight: bold; color: var(--accent-color);">📋 バックアップデータ (スプレッドシート復元用JSON)</span>
@@ -380,7 +377,7 @@
     </div>
     <div class="form-group">
       <label>リポジトリ名：</label>
-      <input type="text" id="gh-repo" placeholder="例: tab-chord-logger">
+      <input type="text" id="gh-repo" value="tab-logger" readonly style="opacity: 0.7;">
     </div>
     <div class="form-group">
       <label>保存ファイルパス：</label>
@@ -400,6 +397,7 @@
 <script>
 const GAS_API_URL = "https://script.google.com/macros/s/AKfycby_ryGNAlu3Z8K_5Qd2IDWNQmnEst0zDvEVCcu2ybQB-Fxbz3pOo690gK-kdCEzzwRt/exec";
 const GITHUB_USER = "yunio-omaru";
+const GITHUB_REPO = "tab-logger";
 
 const NOTE_OPTIONS = [
   "e", "E", "D#", "D", "C#", "C", "B", "A#", "A", "G#", "G", "F#", "F"
@@ -491,17 +489,14 @@ function closeGitHubSettings() {
 }
 
 function loadGitHubConfig() {
-  document.getElementById('gh-repo').value = localStorage.getItem('gh_repo') || '';
   document.getElementById('gh-filepath').value = localStorage.getItem('gh_filepath') || 'backup.json';
   document.getElementById('gh-token').value = localStorage.getItem('gh_token') || '';
 }
 
 function saveGitHubSettings() {
-  const repo = document.getElementById('gh-repo').value.trim();
   const path = document.getElementById('gh-filepath').value.trim();
   const token = document.getElementById('gh-token').value.trim();
 
-  localStorage.setItem('gh_repo', repo);
   localStorage.setItem('gh_filepath', path);
   localStorage.setItem('gh_token', token);
 
@@ -511,12 +506,11 @@ function saveGitHubSettings() {
 
 async function saveToGitHub() {
   collectFormData();
-  const repo = localStorage.getItem('gh_repo');
   const path = localStorage.getItem('gh_filepath') || 'backup.json';
   const token = localStorage.getItem('gh_token');
 
-  if (!repo || !token) {
-    alert("GitHub設定（リポジトリ名とToken）が未設定です。⚙️ ボタンから設定してください。");
+  if (!token) {
+    alert("GitHubのPersonal Access Tokenが未設定です。⚙️ ボタンから設定してください。");
     openGitHubSettings();
     return;
   }
@@ -526,9 +520,8 @@ async function saveToGitHub() {
   btn.innerText = "⏳ コミット中...";
 
   try {
-    const url = `https://api.github.com/repos/${GITHUB_USER}/${repo}/contents/${path}`;
+    const url = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${path}`;
     
-    // 既存ファイルのSHAを取得（上書き更新に必須）
     let sha = "";
     const getRes = await fetch(url, {
       headers: { "Authorization": `token ${token}` }
@@ -538,9 +531,7 @@ async function saveToGitHub() {
       sha = getJson.sha;
     }
 
-    // JSONデータをBase64エンコード
     const contentString = JSON.stringify(appData, null, 2);
-    // UTF-8対応のBase64変換
     const contentBase64 = btoa(unescape(encodeURIComponent(contentString)));
 
     const bodyData = {
@@ -559,7 +550,7 @@ async function saveToGitHub() {
     });
 
     if (putRes.ok) {
-      alert(`✅ GitHub (${repo}/${path}) にバックアップJSONを更新保存しました！`);
+      alert(`✅ GitHub (${GITHUB_REPO}/${path}) にバックアップJSONを更新保存しました！`);
     } else {
       const errJson = await putRes.json();
       alert(`❌ GitHub保存エラー: ${errJson.message}`);
