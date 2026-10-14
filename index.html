@@ -54,17 +54,23 @@
       color: #fff;
       margin: 0;
     }
+    .header-actions {
+      display: flex;
+      gap: 6px;
+    }
     button {
       cursor: pointer;
       border: none;
       border-radius: 6px;
-      padding: 8px 14px;
+      padding: 8px 12px;
       font-weight: bold;
       transition: opacity 0.2s;
     }
     button:hover { opacity: 0.9; }
     button:active { opacity: 0.7; }
     .btn-sync { background-color: #27ae60; color: white; }
+    .btn-github { background-color: #24292e; color: white; border: 1px solid #444; }
+    .btn-backup { background-color: #8e44ad; color: white; }
     .btn-secondary { background-color: #333; color: #fff; border: 1px solid var(--border-color); }
     .btn-add { background-color: var(--primary-color); color: white; }
     .btn-danger { background-color: #c0392b; color: white; padding: 4px 8px; font-size: 0.8rem; }
@@ -131,7 +137,7 @@
 
     .form-group { margin-bottom: 12px; }
     .form-group label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; }
-    input[type="text"], input[type="number"], select {
+    input[type="text"], input[type="number"], input[type="password"], select {
       width: 100%;
       padding: 8px 10px;
       box-sizing: border-box;
@@ -250,14 +256,35 @@
 
     .ascii-output {
       font-family: monospace;
-      white-space: pre;
+      white-space: pre-wrap;
+      word-break: break-all;
       background: #000;
       color: #00ff66;
       padding: 10px;
       border-radius: 6px;
       overflow-x: auto;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       margin-top: 10px;
+      max-height: 200px;
+    }
+
+    /* モーダル表示 */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
+    .modal-box {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      padding: 20px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 400px;
     }
   </style>
 </head>
@@ -265,7 +292,11 @@
 
 <header class="fixed-header">
   <div class="header-title" onclick="showListPage()" style="cursor:pointer;">Tab & Chord Logger</div>
-  <button id="btn-save" class="btn-sync" onclick="executeSave()">💾 保存</button>
+  <div class="header-actions">
+    <button id="btn-save" class="btn-sync" onclick="executeSave()">💾 保存</button>
+    <button id="btn-gh-save" class="btn-github" onclick="saveToGitHub()" title="GitHubリポジトリのJSONに自動保存">🐙 GitHub保存</button>
+    <button class="btn-secondary" onclick="openGitHubSettings()" title="GitHub設定">⚙️</button>
+  </div>
 </header>
 
 <div class="container">
@@ -328,10 +359,47 @@
 
     </div>
   </div>
+
+  <!-- 📋 バックアップJSON出力表示用エリア -->
+  <div id="backup-output-container" style="display: none; margin-top: 20px;" class="app-content">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <span style="font-weight: bold; color: var(--accent-color);">📋 バックアップデータ (スプレッドシート復元用JSON)</span>
+      <button class="btn-secondary btn-sm" onclick="document.getElementById('backup-output-container').style.display='none'">✕ 閉じる</button>
+    </div>
+    <div class="ascii-output" id="backup-json-text"></div>
+  </div>
+</div>
+
+<!-- ⚙️ GitHub連携設定モーダル -->
+<div id="github-modal" class="modal-overlay">
+  <div class="modal-box">
+    <h3 style="margin-top:0;">⚙️ GitHub連携設定</h3>
+    <div class="form-group">
+      <label>GitHub ユーザー名：</label>
+      <input type="text" value="yunio-omaru" readonly style="opacity: 0.7;">
+    </div>
+    <div class="form-group">
+      <label>リポジトリ名：</label>
+      <input type="text" id="gh-repo" placeholder="例: tab-chord-logger">
+    </div>
+    <div class="form-group">
+      <label>保存ファイルパス：</label>
+      <input type="text" id="gh-filepath" value="backup.json">
+    </div>
+    <div class="form-group">
+      <label>Personal Access Token (PAT)：</label>
+      <input type="password" id="gh-token" placeholder="ghp_xxxxxxxxxxxx">
+    </div>
+    <div style="display:flex; justify-content: flex-end; gap: 8px; margin-top: 15px;">
+      <button class="btn-secondary" onclick="closeGitHubSettings()">キャンセル</button>
+      <button class="btn-add" onclick="saveGitHubSettings()">設定を保存</button>
+    </div>
+  </div>
 </div>
 
 <script>
 const GAS_API_URL = "https://script.google.com/macros/s/AKfycby_ryGNAlu3Z8K_5Qd2IDWNQmnEst0zDvEVCcu2ybQB-Fxbz3pOo690gK-kdCEzzwRt/exec";
+const GITHUB_USER = "yunio-omaru";
 
 const NOTE_OPTIONS = [
   "e", "E", "D#", "D", "C#", "C", "B", "A#", "A", "G#", "G", "F#", "F"
@@ -356,11 +424,9 @@ let copiedMatrix = [];
 document.addEventListener('DOMContentLoaded', () => {
   loadFromSpreadsheet();
   setupGlobalCopyPasteEvents();
+  loadGitHubConfig();
 });
 
-/**
- * 🎵 直前で設定されている画面上の最新パートの各弦チューニングを取得するヘルパー
- */
 function getLastUsedTuning() {
   const partCards = document.querySelectorAll('.part-card');
   if (partCards.length > 0) {
@@ -409,6 +475,101 @@ async function executeSave() {
   } finally {
     saveBtn.disabled = false;
     saveBtn.innerText = "💾 保存";
+  }
+}
+
+/* =========================================================
+   🐙 GitHub API 直接自動保存機能
+   ========================================================= */
+
+function openGitHubSettings() {
+  document.getElementById('github-modal').style.display = 'flex';
+}
+
+function closeGitHubSettings() {
+  document.getElementById('github-modal').style.display = 'none';
+}
+
+function loadGitHubConfig() {
+  document.getElementById('gh-repo').value = localStorage.getItem('gh_repo') || '';
+  document.getElementById('gh-filepath').value = localStorage.getItem('gh_filepath') || 'backup.json';
+  document.getElementById('gh-token').value = localStorage.getItem('gh_token') || '';
+}
+
+function saveGitHubSettings() {
+  const repo = document.getElementById('gh-repo').value.trim();
+  const path = document.getElementById('gh-filepath').value.trim();
+  const token = document.getElementById('gh-token').value.trim();
+
+  localStorage.setItem('gh_repo', repo);
+  localStorage.setItem('gh_filepath', path);
+  localStorage.setItem('gh_token', token);
+
+  alert("GitHub設定をブラウザに保存しました！");
+  closeGitHubSettings();
+}
+
+async function saveToGitHub() {
+  collectFormData();
+  const repo = localStorage.getItem('gh_repo');
+  const path = localStorage.getItem('gh_filepath') || 'backup.json';
+  const token = localStorage.getItem('gh_token');
+
+  if (!repo || !token) {
+    alert("GitHub設定（リポジトリ名とToken）が未設定です。⚙️ ボタンから設定してください。");
+    openGitHubSettings();
+    return;
+  }
+
+  const btn = document.getElementById('btn-gh-save');
+  btn.disabled = true;
+  btn.innerText = "⏳ コミット中...";
+
+  try {
+    const url = `https://api.github.com/repos/${GITHUB_USER}/${repo}/contents/${path}`;
+    
+    // 既存ファイルのSHAを取得（上書き更新に必須）
+    let sha = "";
+    const getRes = await fetch(url, {
+      headers: { "Authorization": `token ${token}` }
+    });
+    if (getRes.ok) {
+      const getJson = await getRes.json();
+      sha = getJson.sha;
+    }
+
+    // JSONデータをBase64エンコード
+    const contentString = JSON.stringify(appData, null, 2);
+    // UTF-8対応のBase64変換
+    const contentBase64 = btoa(unescape(encodeURIComponent(contentString)));
+
+    const bodyData = {
+      message: `Auto backup: ${new Date().toLocaleString('ja-JP')}`,
+      content: contentBase64
+    };
+    if (sha) bodyData.sha = sha;
+
+    const putRes = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Authorization": `token ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(bodyData)
+    });
+
+    if (putRes.ok) {
+      alert(`✅ GitHub (${repo}/${path}) にバックアップJSONを更新保存しました！`);
+    } else {
+      const errJson = await putRes.json();
+      alert(`❌ GitHub保存エラー: ${errJson.message}`);
+    }
+  } catch (e) {
+    console.error(e);
+    alert("❌ GitHub保存中にエラーが発生しました");
+  } finally {
+    btn.disabled = false;
+    btn.innerText = "🐙 GitHub保存";
   }
 }
 
