@@ -186,7 +186,7 @@
       border: 1px solid #444;
       text-align: center;
       padding: 2px;
-      min-width: 32px;
+      min-width: 38px;
       position: relative;
     }
     .tab-table th { background-color: #1a1a1a; color: var(--accent-color); font-size: 0.8rem; }
@@ -217,7 +217,7 @@
       top: 0; left: 0; right: 0; bottom: 0;
       display: flex; align-items: center; justify-content: center;
       color: rgba(255, 255, 255, 0.25);
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       pointer-events: none;
       font-weight: bold;
     }
@@ -229,7 +229,7 @@
       color: #fff;
       text-align: center;
       font-family: monospace;
-      font-size: 1rem;
+      font-size: 0.9rem;
       font-weight: bold;
       box-sizing: border-box;
     }
@@ -709,7 +709,7 @@ function createStringRowHtml(sIdx, stringNote, part, prevPart) {
       <td>
         <div class="tab-input-wrapper">
           <div class="tab-ghost">${ghostVal}</div>
-          <input type="text" class="tab-input" data-step="${step}" value="${val}" oninput="updateGhostGuide(this)">
+          <input type="text" class="tab-input" data-step="${step}" value="${val}" onchange="formatCapoInput(this)" oninput="updateGhostGuide(this)">
         </div>
       </td>
     `;
@@ -727,6 +727,27 @@ function createStringRowHtml(sIdx, stringNote, part, prevPart) {
       ${tds}
     </tr>
   `;
+}
+
+/**
+ * 🎵 Capo設定に応じたフレット番号自動補正機能
+ */
+function formatCapoInput(inputEl) {
+  const rawVal = inputEl.value.trim();
+  const capoVal = parseInt(document.getElementById('song-capo').value || "0", 10);
+
+  // Capo設定なし、あるいは空文字やハイフンの場合は補正しない
+  if (capoVal <= 0 || !rawVal || rawVal === "-") return;
+
+  // すでに "1(6)" のような形式になっている場合は再計算防止
+  if (/\d+\(\d+\)/.test(rawVal)) return;
+
+  // 入力された値が単純な数字（半角数値）の場合のみ適用
+  const fretNum = parseInt(rawVal, 10);
+  if (!isNaN(fretNum) && fretNum > 0) {
+    const actualFret = fretNum + capoVal;
+    inputEl.value = `${fretNum}(${actualFret})`;
+  }
 }
 
 /**
@@ -776,7 +797,7 @@ function addPartToSection(secId) {
 }
 
 /**
- * 任意の場所に弦を挿入するモーダル／ダイアログ制御
+ * 任意の場所に弦を挿入するダイアログ制御
  */
 function insertStringRow(btnEl) {
   const tr = btnEl.closest('tr');
