@@ -341,6 +341,168 @@
       width: 90%;
       max-width: 400px;
     }
+
+    /* 🎸 コードフォーム（ダイアグラム）表示エリア */
+    .chord-diagrams-area {
+      background: #181818;
+      border: 1px solid #383838;
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+    .chord-diagrams-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .chord-diagrams-list {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--accent-color) #222;
+    }
+    .chord-diagrams-list::-webkit-scrollbar { height: 6px; }
+    .chord-diagrams-list::-webkit-scrollbar-track { background: #141414; border-radius: 3px; }
+    .chord-diagrams-list::-webkit-scrollbar-thumb { background: var(--accent-color); border-radius: 3px; }
+
+    .diagram-card {
+      background: #232323;
+      border: 1px solid #444;
+      border-radius: 6px;
+      padding: 6px 8px 8px 8px;
+      min-width: 148px;
+      box-sizing: border-box;
+      flex-shrink: 0;
+    }
+    .diagram-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+      gap: 4px;
+    }
+    .diagram-chord-name {
+      background: #f1c40f;
+      color: #111;
+      font-weight: bold;
+      font-size: 0.85rem;
+      padding: 1px 6px;
+      border-radius: 3px;
+      min-width: 32px;
+      text-align: center;
+      border: none;
+      width: 56px !important;
+    }
+    .diagram-base-fret {
+      font-size: 0.78rem;
+      font-weight: bold;
+      color: #fff;
+      background: #333;
+      padding: 1px 5px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .diagram-actions {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .diagram-btn {
+      background: #333;
+      color: #eee;
+      border: 1px solid #555;
+      border-radius: 3px;
+      padding: 1px 5px;
+      font-size: 0.72rem;
+      line-height: 1.2;
+      font-weight: bold;
+    }
+    .diagram-btn:hover { background: #4a90e2; color: #fff; border-color: #4a90e2; }
+    .diagram-btn-del:hover { background: #c0392b; border-color: #c0392b; }
+
+    /* 指板グリッド (6弦 × [開放/ミュート列 + 5フレット列]) */
+    .fretboard-grid {
+      display: grid;
+      grid-template-columns: 20px repeat(5, 22px);
+      gap: 0;
+      margin-top: 4px;
+      user-select: none;
+    }
+    .fb-cell {
+      height: 19px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      cursor: pointer;
+    }
+    /* 0列目: 開放(o)・ミュート(x) */
+    .fb-open-col {
+      font-size: 0.78rem;
+      font-weight: bold;
+      color: #ccc;
+      border-right: 2px solid #888;
+    }
+    .fb-open-col.is-nut {
+      border-right: 3px solid #e0e0e0;
+    }
+    /* 1〜5フレット列: 弦の横線とフレットの縦線 */
+    .fb-fret-col {
+      border-right: 1px solid #666;
+    }
+    .fb-fret-col::before {
+      content: "";
+      position: absolute;
+      left: 0; right: 0;
+      top: 50%;
+      height: 1px;
+      background: #888;
+      z-index: 1;
+    }
+    .fb-fret-col:hover {
+      background: rgba(74, 144, 226, 0.25);
+    }
+    .fb-open-col:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+    /* 押弦ドット */
+    .fb-dot {
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: #f0f0f0;
+      color: #111;
+      font-size: 0.65rem;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.7);
+    }
+    /* 自分でタップして変更・追加した箇所の赤色表示 */
+    .fb-dot.custom-red {
+      background: #ff3b30 !important;
+      color: #fff !important;
+      box-shadow: 0 0 5px rgba(255, 59, 48, 0.8);
+    }
+    .fb-open-mark.custom-red {
+      color: #ff3b30 !important;
+      font-weight: 900;
+    }
+    .fb-fret-numbers {
+      display: grid;
+      grid-template-columns: 20px repeat(5, 22px);
+      font-size: 0.65rem;
+      color: #888;
+      text-align: center;
+      margin-top: 2px;
+    }
   </style>
 </head>
 <body>
@@ -480,6 +642,135 @@ let startCell = null;
 let currentSelection = [];
 let copiedMatrix = [];
 
+// ==========================================
+// 🎸 コードフォーム規則データベース（Excel「コードフォーム表」準拠）
+// ==========================================
+// 配列は [1弦, 2弦, 3弦, 4弦, 5弦, 6弦] の相対フレット位置
+// 'x' = ミュート, 0 = ルート位置(開放またはバレー), 1〜4 = ルートからの相対フレット
+const SHAPE_TEMPLATES_5STR = {
+  "":      { name: "5弦ルート(A型)",   frets: [0, 2, 2, 2, 0, 'x'] },
+  "M":     { name: "5弦ルート(A型)",   frets: [0, 2, 2, 2, 0, 'x'] },
+  "m":     { name: "5弦ルート(Am型)",  frets: [0, 1, 2, 2, 0, 'x'] },
+  "7":     { name: "5弦ルート(A7型)",  frets: [0, 2, 0, 2, 0, 'x'] },
+  "M7":    { name: "5弦ルート(AM7型)", frets: [0, 2, 1, 2, 0, 'x'] },
+  "maj7":  { name: "5弦ルート(AM7型)", frets: [0, 2, 1, 2, 0, 'x'] },
+  "m7":    { name: "5弦ルート(Am7型)", frets: [0, 1, 0, 2, 0, 'x'] },
+  "6":     { name: "5弦ルート(A6型)",  frets: [2, 2, 2, 2, 0, 'x'] },
+  "add9":  { name: "5弦ルート(Aadd9型)",frets: [0, 0, 2, 2, 0, 'x'] },
+  "sus4":  { name: "5弦ルート(Asus4型)",frets: [0, 3, 2, 2, 0, 'x'] },
+  "dim":   { name: "5弦ルート(Adim型)", frets: [0, 1, 2, 1, 0, 'x'] },
+  "m7b5":  { name: "5弦ルート(Am7b5型)",frets:['x', 1, 0, 1, 0, 'x'] },
+  "m7-5":  { name: "5弦ルート(Am7b5型)",frets:['x', 1, 0, 1, 0, 'x'] }
+};
+
+const SHAPE_TEMPLATES_6STR = {
+  "":      { name: "6弦ルート(E型)",   frets: [0, 0, 1, 2, 2, 0] },
+  "M":     { name: "6弦ルート(E型)",   frets: [0, 0, 1, 2, 2, 0] },
+  "m":     { name: "6弦ルート(Em型)",  frets: [0, 0, 0, 2, 2, 0] },
+  "7":     { name: "6弦ルート(E7型)",  frets: [0, 0, 1, 0, 2, 0] },
+  "M7":    { name: "6弦ルート(EM7型)", frets: [0, 0, 1, 1, 2, 0] },
+  "maj7":  { name: "6弦ルート(EM7型)", frets: [0, 0, 1, 1, 2, 0] },
+  "m7":    { name: "6弦ルート(Em7型)", frets: [0, 0, 0, 0, 2, 0] },
+  "6":     { name: "6弦ルート(E6型)",  frets: [0, 2, 1, 2, 2, 0] },
+  "add9":  { name: "6弦ルート(Eadd9型)",frets:[2, 0, 1, 2, 2, 0] },
+  "sus4":  { name: "6弦ルート(Esus4型)",frets:[0, 0, 2, 2, 2, 0] },
+  "dim":   { name: "6弦ルート(Edim型)", frets: [0, 2, 0, 1, 1, 0] },
+  "m7b5":  { name: "6弦ルート(Em7b5型)",frets:['x', 0, 0, 0, 1, 0] },
+  "m7-5":  { name: "6弦ルート(Em7b5型)",frets:['x', 0, 0, 0, 1, 0] }
+};
+
+// オープンコード等の特別フォーム（ローポジション優先用）
+const SPECIAL_OPEN_FORMS = {
+  "C":     [{ name: "オープンC", baseFret: 1, frets: [0, 1, 0, 2, 3, 'x'] }],
+  "CM7":   [{ name: "オープンCM7", baseFret: 1, frets: [0, 0, 0, 2, 3, 'x'] }],
+  "Cmaj7": [{ name: "オープンCM7", baseFret: 1, frets: [0, 0, 0, 2, 3, 'x'] }],
+  "C7":    [{ name: "オープンC7", baseFret: 1, frets: [0, 1, 3, 2, 3, 'x'] }],
+  "Cadd9": [{ name: "オープンCadd9", baseFret: 1, frets: [3, 3, 0, 2, 3, 'x'] }],
+  "D":     [{ name: "オープンD", baseFret: 1, frets: [2, 3, 2, 0, 'x', 'x'] }],
+  "Dm":    [{ name: "オープンDm", baseFret: 1, frets: [1, 3, 2, 0, 'x', 'x'] }],
+  "D7":    [{ name: "オープンD7", baseFret: 1, frets: [2, 1, 2, 0, 'x', 'x'] }],
+  "DM7":   [{ name: "オープンDM7", baseFret: 1, frets: [2, 2, 2, 0, 'x', 'x'] }],
+  "Dmaj7": [{ name: "オープンDM7", baseFret: 1, frets: [2, 2, 2, 0, 'x', 'x'] }],
+  "Dm7":   [{ name: "オープンDm7", baseFret: 1, frets: [1, 1, 2, 0, 'x', 'x'] }],
+  "Dsus4": [{ name: "オープンDsus4", baseFret: 1, frets: [3, 3, 2, 0, 'x', 'x'] }],
+  "G":     [{ name: "オープンG", baseFret: 1, frets: [3, 0, 0, 0, 2, 3] }],
+  "G7":    [{ name: "オープンG7", baseFret: 1, frets: [1, 0, 0, 0, 2, 3] }],
+  "GM7":   [{ name: "オープンGM7", baseFret: 1, frets: [2, 0, 0, 0, 2, 3] }],
+  "Gmaj7": [{ name: "オープンGM7", baseFret: 1, frets: [2, 0, 0, 0, 2, 3] }],
+  "B7":    [{ name: "オープンB7", baseFret: 1, frets: [2, 0, 2, 1, 2, 'x'] }]
+};
+
+function parseChordSymbol(chordStr) {
+  if (!chordStr) return null;
+  let s = chordStr.trim().replace(/♭/g, 'b').replace(/♯/g, '#');
+  // スラッシュコードの場合はルート側を主解析
+  const slashParts = s.split('/');
+  const mainPart = slashParts[0];
+  const m = mainPart.match(/^([A-Ga-g][#b]?)(.*)$/);
+  if (!m) return null;
+  let root = m[1].charAt(0).toUpperCase() + m[1].slice(1);
+  let suffix = m[2] || "";
+  if (suffix === "maj7" || suffix === "Δ7") suffix = "M7";
+  if (suffix === "m7-5" || suffix === "ø") suffix = "m7b5";
+  return { root, suffix, full: root + suffix };
+}
+
+function getChordFormsForName(chordStr) {
+  const parsed = parseChordSymbol(chordStr);
+  if (!parsed) return [];
+  const { root, suffix, full } = parsed;
+  const rootIdx = NOTE_TO_INDEX[root.toUpperCase()];
+  if (rootIdx === undefined) return [];
+
+  const forms = [];
+
+  // 1. 5弦ルート (A = index 9)
+  const fret5 = (rootIdx - 9 + 12) % 12;
+  const tmpl5 = SHAPE_TEMPLATES_5STR[suffix] || SHAPE_TEMPLATES_5STR[""];
+  if (tmpl5) {
+    const base5 = fret5 === 0 ? 1 : fret5;
+    const absFrets5 = tmpl5.frets.map(f => f === 'x' ? 'x' : f + fret5);
+    forms.push({
+      label: `5弦${fret5}F (${tmpl5.name})`,
+      baseFret: base5,
+      frets: absFrets5 // [1弦..6弦] の絶対フレット番号
+    });
+  }
+
+  // 2. 6弦ルート (E = index 4)
+  const fret6 = (rootIdx - 4 + 12) % 12;
+  const tmpl6 = SHAPE_TEMPLATES_6STR[suffix] || SHAPE_TEMPLATES_6STR[""];
+  if (tmpl6) {
+    const base6 = fret6 === 0 ? 1 : fret6;
+    const absFrets6 = tmpl6.frets.map(f => f === 'x' ? 'x' : f + fret6);
+    forms.push({
+      label: `6弦${fret6}F (${tmpl6.name})`,
+      baseFret: base6,
+      frets: absFrets6
+    });
+  }
+
+  // 3. オープンフォームがあれば先頭（または候補）に追加
+  if (SPECIAL_OPEN_FORMS[full]) {
+    SPECIAL_OPEN_FORMS[full].forEach(sp => {
+      // 既に同じフレット配列がなければ先頭に追加
+      const exists = forms.some(f => JSON.stringify(f.frets) === JSON.stringify(sp.frets));
+      if (!exists) {
+        forms.unshift({
+          label: sp.name,
+          baseFret: sp.baseFret,
+          frets: [...sp.frets]
+        });
+      }
+    });
+  }
+
+  return forms;
+}
+
+// ==========================================
+// 初期化・クラウド同期
+// ==========================================
 document.addEventListener('DOMContentLoaded', () => {
   loadFromSpreadsheet();
   setupGlobalCopyPasteEvents();
@@ -653,6 +944,9 @@ function collectFormData() {
       chords.push(cIn.value);
     }
 
+    // コードフォーム（ダイアグラム）状態の収集
+    const chordDiagrams = sCard._diagramState || [];
+
     const partCards = sCard.querySelectorAll('.part-card');
     const parts = [];
 
@@ -689,6 +983,7 @@ function collectFormData() {
       name: secName,
       memo: memo,
       chords: chords,
+      chordDiagrams: chordDiagrams,
       parts: parts
     });
   }
@@ -810,7 +1105,7 @@ function renderSectionUI(sec) {
   for (let i = 0; i < totalSteps; i++) {
     chordCols += '<col class="chord-col">';
     const val = (sec.chords && sec.chords[i]) ? sec.chords[i] : "";
-    chordThs += `<th class="chord-th"><div class="tab-input-wrapper"><input type="text" class="tab-input chord-input" data-step="${i}" placeholder="コード" value="${val}" oninput="checkAndExpandColumns(this)"></div></th>`;
+    chordThs += `<th class="chord-th"><div class="tab-input-wrapper"><input type="text" class="tab-input chord-input" data-step="${i}" placeholder="コード" value="${val}" oninput="handleChordInput(this); checkAndExpandColumns(this)"></div></th>`;
   }
 
   card.innerHTML = `
@@ -837,6 +1132,15 @@ function renderSectionUI(sec) {
       </table>
     </div>
 
+    <!-- 🎸 コードフォーム（ダイアグラム）表示エリア -->
+    <div class="chord-diagrams-area">
+      <div class="chord-diagrams-header">
+        <span>🎸 コードフォーム（コード入力で自動表示 / タップで赤点編集 / ▼で別フォーム切替）</span>
+        <button type="button" class="btn-secondary btn-sm" style="padding:2px 8px; font-size:0.75rem;" onclick="addManualDiagramCard('${secId}')">＋ 空の指板を追加</button>
+      </div>
+      <div class="chord-diagrams-list" id="diagrams-list-${secId}"></div>
+    </div>
+
     <div class="parts-container"></div>
 
     <button type="button" class="btn-secondary btn-sm" onclick="addPartToSection('${secId}')" style="margin-top:8px;">
@@ -851,6 +1155,22 @@ function renderSectionUI(sec) {
 
   secContainer.appendChild(card);
 
+  // ダイアグラム初期状態の復元または構築
+  if (sec.chordDiagrams && sec.chordDiagrams.length > 0) {
+    card._diagramState = JSON.parse(JSON.stringify(sec.chordDiagrams));
+  } else {
+    card._diagramState = [];
+    if (sec.chords) {
+      sec.chords.forEach((cVal, stepIdx) => {
+        if (cVal && cVal.trim() !== "") {
+          const item = createDiagramStateFromChord(cVal.trim(), stepIdx);
+          if (item) card._diagramState.push(item);
+        }
+      });
+    }
+  }
+  renderChordDiagrams(card);
+
   const partsContainer = card.querySelector('.parts-container');
   const currentTuning = getLastUsedTuning();
   const parts = (sec.parts && sec.parts.length > 0) ? sec.parts : [{ id: "part_" + Date.now(), name: "gt1", tuning: currentTuning, grid: {} }];
@@ -861,6 +1181,264 @@ function renderSectionUI(sec) {
   }
 }
 
+// ==========================================
+// 🎸 コードフォーム（ダイアグラム）管理・描画ロジック
+// ==========================================
+function createDiagramStateFromChord(chordName, linkedStep = null) {
+  const forms = getChordFormsForName(chordName);
+  if (forms.length > 0) {
+    const f = forms[0];
+    return {
+      id: "diag_" + Date.now() + "_" + Math.random().toString(36).substr(2, 4),
+      linkedStep: linkedStep,
+      chordName: chordName,
+      formIndex: 0,
+      baseFret: f.baseFret,
+      frets: [...f.frets],      // [1弦..6弦] の絶対フレット値 ('x' or 0..24)
+      customEdited: [false, false, false, false, false, false] // 手動変更フラグ（赤表示用）
+    };
+  }
+  return {
+    id: "diag_" + Date.now() + "_" + Math.random().toString(36).substr(2, 4),
+    linkedStep: linkedStep,
+    chordName: chordName || "",
+    formIndex: 0,
+    baseFret: 1,
+    frets: [null, null, null, null, null, null],
+    customEdited: [false, false, false, false, false, false]
+  };
+}
+
+function handleChordInput(inputEl) {
+  const sCard = inputEl.closest('.section-card');
+  if (!sCard) return;
+  const step = parseInt(inputEl.dataset.step, 10);
+  const val = inputEl.value.trim();
+
+  if (!sCard._diagramState) sCard._diagramState = [];
+
+  // このステップに紐づくメインカードを探す
+  const existingIdx = sCard._diagramState.findIndex(d => d.linkedStep === step && !d.isClone);
+
+  if (val === "") {
+    if (existingIdx !== -1) {
+      sCard._diagramState.splice(existingIdx, 1);
+      renderChordDiagrams(sCard);
+    }
+    return;
+  }
+
+  const newItem = createDiagramStateFromChord(val, step);
+  if (existingIdx !== -1) {
+    newItem.id = sCard._diagramState[existingIdx].id;
+    sCard._diagramState[existingIdx] = newItem;
+  } else {
+    // ステップ順に挿入
+    let insertPos = sCard._diagramState.length;
+    for (let i = 0; i < sCard._diagramState.length; i++) {
+      if (sCard._diagramState[i].linkedStep !== null && sCard._diagramState[i].linkedStep > step) {
+        insertPos = i;
+        break;
+      }
+    }
+    sCard._diagramState.splice(insertPos, 0, newItem);
+  }
+  renderChordDiagrams(sCard);
+}
+
+function addManualDiagramCard(secId) {
+  const sCard = document.querySelector(`.section-card[data-section-id="${secId}"]`);
+  if (!sCard) return;
+  if (!sCard._diagramState) sCard._diagramState = [];
+  sCard._diagramState.push({
+    id: "diag_" + Date.now() + "_" + Math.random().toString(36).substr(2, 4),
+    linkedStep: null,
+    chordName: "",
+    formIndex: 0,
+    baseFret: 1,
+    frets: [null, null, null, null, null, null],
+    customEdited: [false, false, false, false, false, false]
+  });
+  renderChordDiagrams(sCard);
+}
+
+function duplicateDiagramAfter(secId, diagIdx) {
+  const sCard = document.querySelector(`.section-card[data-section-id="${secId}"]`);
+  if (!sCard || !sCard._diagramState) return;
+  const src = sCard._diagramState[diagIdx];
+  if (!src) return;
+  const clone = JSON.parse(JSON.stringify(src));
+  clone.id = "diag_" + Date.now() + "_" + Math.random().toString(36).substr(2, 4);
+  clone.isClone = true;
+  sCard._diagramState.splice(diagIdx + 1, 0, clone);
+  renderChordDiagrams(sCard);
+}
+
+function removeDiagramAt(secId, diagIdx) {
+  const sCard = document.querySelector(`.section-card[data-section-id="${secId}"]`);
+  if (!sCard || !sCard._diagramState) return;
+  sCard._diagramState.splice(diagIdx, 1);
+  renderChordDiagrams(sCard);
+}
+
+function cycleDiagramForm(secId, diagIdx) {
+  const sCard = document.querySelector(`.section-card[data-section-id="${secId}"]`);
+  if (!sCard || !sCard._diagramState) return;
+  const item = sCard._diagramState[diagIdx];
+  if (!item || !item.chordName) return;
+
+  const forms = getChordFormsForName(item.chordName);
+  if (forms.length <= 1) {
+    alert("このコードの別フォーム候補は現在1パターンのみです（指板をタップして自由に編集できます）");
+    return;
+  }
+  const nextIndex = (item.formIndex + 1) % forms.length;
+  const nextForm = forms[nextIndex];
+  item.formIndex = nextIndex;
+  item.baseFret = nextForm.baseFret;
+  item.frets = [...nextForm.frets];
+  item.customEdited = [false, false, false, false, false, false];
+  renderChordDiagrams(sCard);
+}
+
+function changeDiagramBaseFret(secId, diagIdx) {
+  const sCard = document.querySelector(`.section-card[data-section-id="${secId}"]`);
+  if (!sCard || !sCard._diagramState) return;
+  const item = sCard._diagramState[diagIdx];
+  if (!item) return;
+
+  const input = prompt("表示開始フレット番号（1〜15）を入力してください:", item.baseFret || 1);
+  const num = parseInt(input, 10);
+  if (!isNaN(num) && num >= 1 && num <= 20) {
+    const diff = num - (item.baseFret || 1);
+    item.baseFret = num;
+    // 押さえているフレットも平行移動させる
+    item.frets = item.frets.map(f => (typeof f === 'number' && f > 0) ? Math.max(1, f + diff) : f);
+    renderChordDiagrams(sCard);
+  }
+}
+
+function updateDiagramChordName(secId, diagIdx, newName) {
+  const sCard = document.querySelector(`.section-card[data-section-id="${secId}"]`);
+  if (!sCard || !sCard._diagramState) return;
+  const item = sCard._diagramState[diagIdx];
+  if (!item) return;
+
+  const trimmed = newName.trim();
+  item.chordName = trimmed;
+  const forms = getChordFormsForName(trimmed);
+  if (forms.length > 0) {
+    item.formIndex = 0;
+    item.baseFret = forms[0].baseFret;
+    item.frets = [...forms[0].frets];
+    item.customEdited = [false, false, false, false, false, false];
+  }
+  renderChordDiagrams(sCard);
+}
+
+// 指板タップ時のトグル処理（押弦追加・解除、赤色フラグON）
+function toggleFretboardCell(secId, diagIdx, strIdx, fretOffset) {
+  const sCard = document.querySelector(`.section-card[data-section-id="${secId}"]`);
+  if (!sCard || !sCard._diagramState) return;
+  const item = sCard._diagramState[diagIdx];
+  if (!item) return;
+
+  const currentVal = item.frets[strIdx];
+
+  if (fretOffset === 0) {
+    // 0列目（開放・ミュート列）のタップ切り替え: null -> 0(開放) -> 'x'(ミュート) -> null
+    if (currentVal === 0) {
+      item.frets[strIdx] = 'x';
+    } else if (currentVal === 'x') {
+      item.frets[strIdx] = null;
+    } else {
+      item.frets[strIdx] = 0;
+    }
+  } else {
+    // 1〜5フレット列のタップ切り替え
+    const targetAbsFret = (item.baseFret || 1) + (fretOffset - 1);
+    if (currentVal === targetAbsFret) {
+      // 既に押さえている場所をもう一度タップしたら解除
+      item.frets[strIdx] = null;
+    } else {
+      item.frets[strIdx] = targetAbsFret;
+    }
+  }
+
+  // 要件: 「このように自分でいじった部分は赤くなるようにしたい」
+  item.customEdited[strIdx] = true;
+  renderChordDiagrams(sCard);
+}
+
+function renderChordDiagrams(sCard) {
+  const secId = sCard.dataset.sectionId;
+  const listEl = document.getElementById(`diagrams-list-${secId}`);
+  if (!listEl) return;
+
+  const state = sCard._diagramState || [];
+  if (state.length === 0) {
+    listEl.innerHTML = `<div style="font-size:0.78rem; color:#777; padding:6px;">上の「Chord」欄にコード名（例: B, A#, Am7, G）を入力すると、ここにコードフォームが自動表示されます。</div>`;
+    return;
+  }
+
+  let html = "";
+  state.forEach((item, dIdx) => {
+    const baseFret = item.baseFret || 1;
+    const isNut = (baseFret === 1);
+
+    // 1弦(strIdx=0) 〜 6弦(strIdx=5) のグリッド描画
+    let gridHtml = "";
+    for (let strIdx = 0; strIdx < 6; strIdx++) {
+      const val = item.frets[strIdx];
+      const isCustom = item.customEdited && item.customEdited[strIdx];
+      const redClass = isCustom ? "custom-red" : "";
+
+      // 0列目: 開放(o) / ミュート(x)
+      let openText = "";
+      if (val === 0) openText = "o";
+      else if (val === 'x') openText = "x";
+
+      gridHtml += `<div class="fb-cell fb-open-col ${isNut ? 'is-nut' : ''}" onclick="toggleFretboardCell('${secId}', ${dIdx}, ${strIdx}, 0)" title="タップで開放(o)/ミュート(x)切替"><span class="fb-open-mark ${redClass}">${openText}</span></div>`;
+
+      // 1〜5フレット列
+      for (let fOff = 1; fOff <= 5; fOff++) {
+        const cellAbsFret = baseFret + (fOff - 1);
+        const isPressed = (typeof val === 'number' && val > 0 && val === cellAbsFret);
+        gridHtml += `<div class="fb-cell fb-fret-col" onclick="toggleFretboardCell('${secId}', ${dIdx}, ${strIdx}, ${fOff})" title="${strIdx + 1}弦 ${cellAbsFret}F をタップ">${isPressed ? `<div class="fb-dot ${redClass}">o</div>` : ''}</div>`;
+      }
+    }
+
+    // フレット番号ガイド
+    let fretNumsHtml = `<div></div>`;
+    for (let fOff = 0; fOff < 5; fOff++) {
+      fretNumsHtml += `<div>${baseFret + fOff}</div>`;
+    }
+
+    html += `
+      <div class="diagram-card">
+        <div class="diagram-top-bar">
+          <div style="display:flex; align-items:center; gap:3px;">
+            <input type="text" class="diagram-chord-name" value="${item.chordName || ''}" placeholder="コード" onchange="updateDiagramChordName('${secId}', ${dIdx}, this.value)">
+            <span class="diagram-base-fret" onclick="changeDiagramBaseFret('${secId}', ${dIdx})" title="開始フレット変更">${baseFret > 1 ? baseFret : ''}</span>
+            <button type="button" class="diagram-btn" onclick="cycleDiagramForm('${secId}', ${dIdx})" title="同じコードの別フォーム(押さえ方)へ切替">▼</button>
+          </div>
+          <div class="diagram-actions">
+            <button type="button" class="diagram-btn" onclick="duplicateDiagramAfter('${secId}', ${dIdx})" title="右隣に指板を追加">＋</button>
+            <button type="button" class="diagram-btn diagram-btn-del" onclick="removeDiagramAt('${secId}', ${dIdx})" title="この指板を削除">－</button>
+          </div>
+        </div>
+        <div class="fretboard-grid">${gridHtml}</div>
+        <div class="fb-fret-numbers">${fretNumsHtml}</div>
+      </div>
+    `;
+  });
+
+  listEl.innerHTML = html;
+}
+
+// ==========================================
+// 既存 Tab & コード自動判定ロジック
+// ==========================================
 function createNoteOptionsHtml(selectedNote) {
   let html = "";
   let options = [...NOTE_OPTIONS];
@@ -974,7 +1552,7 @@ function expandSectionStep(sCard, newStepIdx) {
   const chordRow = sCard.querySelector('.chord-header-row');
   const th = document.createElement('th');
   th.className = "chord-th";
-  th.innerHTML = `<div class="tab-input-wrapper"><input type="text" class="tab-input chord-input" data-step="${newStepIdx}" placeholder="コード" value="" oninput="checkAndExpandColumns(this)"></div>`;
+  th.innerHTML = `<div class="tab-input-wrapper"><input type="text" class="tab-input chord-input" data-step="${newStepIdx}" placeholder="コード" value="" oninput="handleChordInput(this); checkAndExpandColumns(this)"></div>`;
   chordRow.appendChild(th);
 
   const partCards = sCard.querySelectorAll('.part-card');
@@ -1086,7 +1664,6 @@ function detectAndSetChords(secId) {
     for (const pCard of partCards) {
       const rows = Array.from(pCard.querySelectorAll('tbody tr'));
       
-      // 🎸 低音弦（最下行＝6弦側）から上に向かって検索し、ベース音（一番下の音）を特定する
       for (let rIdx = rows.length - 1; rIdx >= 0; rIdx--) {
         const row = rows[rIdx];
         const stringNote = row.querySelector('.string-select').value;
@@ -1116,6 +1693,7 @@ function detectAndSetChords(secId) {
       const detectedChord = analyzeAdvancedChordWithKey(Array.from(pitchSet), bassNoteName, estimatedKey);
       if (chordInputs[step]) {
         chordInputs[step].value = detectedChord;
+        handleChordInput(chordInputs[step]);
       }
     }
   }
@@ -1168,7 +1746,6 @@ function analyzeAdvancedChordWithKey(notes, bassNote, keyRoot) {
   }
 
   if (candidateChords.length > 0) {
-    // 優先度ソート: 最低音（ベース音）がルート音のコードを絶対優先
     candidateChords.sort((a, b) => {
       if (a.isBassRoot !== b.isBassRoot) {
         return a.isBassRoot ? -1 : 1;
@@ -1277,9 +1854,6 @@ function selectCellRange(cellA, cellB) {
 function copySelectionToClipboard() {
   copiedMatrix = [];
   if (currentSelection.length === 0) return;
-
-  const firstTd = currentSelection[0];
-  const tbody = firstTd.closest('tbody');
 
   const rowMap = {};
   for (const td of currentSelection) {
@@ -1419,6 +1993,7 @@ function addSection(defaultName = "新規セクション") {
     name: defaultName,
     memo: "",
     chords: Array(8).fill(""),
+    chordDiagrams: [],
     parts: [{ id: "part_" + Date.now(), name: "gt1", tuning: currentTuning, grid: {} }]
   };
   renderSectionUI(newSec);
