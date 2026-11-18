@@ -1,6 +1,952 @@
 {
   "songs": [
     {
+      "id": "song_1794979788875",
+      "artist": "KAT-TUN",
+      "title": "keep the faith",
+      "bpm": "120",
+      "tuning": "Standard",
+      "capo": "1",
+      "sections": [
+        {
+          "id": "sec_1794979788876",
+          "name": "B",
+          "memo": "",
+          "chords": [
+            "D",
+            "E",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "chordDiagrams": [
+            {
+              "id": "diag_1794980139984_l0sc",
+              "linkedStep": 0,
+              "chordName": "D",
+              "formIndex": 0,
+              "baseFret": 1,
+              "frets": [
+                2,
+                3,
+                2,
+                0,
+                "x",
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794980139985_lk3b",
+              "linkedStep": 1,
+              "chordName": "E",
+              "formIndex": 1,
+              "baseFret": 1,
+              "frets": [
+                0,
+                0,
+                1,
+                2,
+                2,
+                0
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            }
+          ],
+          "parts": [
+            {
+              "id": "part_1794979788876",
+              "name": "gt1",
+              "tuning": [
+                "D#",
+                "A#",
+                "F#",
+                "C#",
+                "G#",
+                "D#"
+              ],
+              "grid": {
+                "0": [
+                  "2(3)",
+                  "0",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-"
+                ],
+                "1": [
+                  "3(4)",
+                  "0",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-"
+                ],
+                "2": [
+                  "2(3)",
+                  "1(2)",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-"
+                ],
+                "3": [
+                  "0",
+                  "2(3)",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-"
+                ],
+                "4": [
+                  "-",
+                  "2(3)",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-"
+                ],
+                "5": [
+                  "-",
+                  "0",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "sec_1794980414342",
+          "name": "サビ",
+          "memo": "",
+          "chords": [
+            "D",
+            "E",
+            "F#m",
+            "G#",
+            "A",
+            "B",
+            "",
+            "D",
+            "E",
+            "F#m",
+            "B",
+            "A",
+            "G#",
+            "",
+            "D",
+            "E",
+            "F#m",
+            "G#",
+            "A",
+            "B",
+            "",
+            "D5/A",
+            "E5/B",
+            "F#5/C#",
+            ""
+          ],
+          "chordDiagrams": [
+            {
+              "id": "diag_1794981551663_hvho",
+              "linkedStep": 0,
+              "chordName": "D",
+              "formIndex": 0,
+              "baseFret": 1,
+              "frets": [
+                2,
+                3,
+                2,
+                0,
+                "x",
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794981551663_7np3",
+              "linkedStep": 1,
+              "chordName": "E",
+              "formIndex": 0,
+              "baseFret": 7,
+              "frets": [
+                7,
+                9,
+                9,
+                9,
+                7,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794981551663_x4wl",
+              "linkedStep": 2,
+              "chordName": "F#m",
+              "formIndex": 0,
+              "baseFret": 9,
+              "frets": [
+                9,
+                10,
+                11,
+                11,
+                9,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794981551663_p22n",
+              "linkedStep": 3,
+              "chordName": "G#",
+              "formIndex": 0,
+              "baseFret": 11,
+              "frets": [
+                11,
+                13,
+                13,
+                13,
+                11,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794981551664_v6nd",
+              "linkedStep": 4,
+              "chordName": "A",
+              "formIndex": 0,
+              "baseFret": 1,
+              "frets": [
+                0,
+                2,
+                2,
+                2,
+                0,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794981551665_yb6g",
+              "linkedStep": 5,
+              "chordName": "B",
+              "formIndex": 0,
+              "baseFret": 2,
+              "frets": [
+                2,
+                4,
+                4,
+                4,
+                2,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794981551665_f9oq",
+              "linkedStep": 7,
+              "chordName": "D",
+              "formIndex": 0,
+              "baseFret": 1,
+              "frets": [
+                2,
+                3,
+                2,
+                0,
+                "x",
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794981551666_uz54",
+              "linkedStep": 8,
+              "chordName": "E",
+              "formIndex": 0,
+              "baseFret": 7,
+              "frets": [
+                7,
+                9,
+                9,
+                9,
+                7,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794981551667_b3wh",
+              "linkedStep": 9,
+              "chordName": "F#m",
+              "formIndex": 0,
+              "baseFret": 9,
+              "frets": [
+                9,
+                10,
+                11,
+                11,
+                9,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794981551668_ketq",
+              "linkedStep": 10,
+              "chordName": "B",
+              "formIndex": 0,
+              "baseFret": 2,
+              "frets": [
+                2,
+                4,
+                4,
+                4,
+                2,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794981551669_idzo",
+              "linkedStep": 11,
+              "chordName": "A",
+              "formIndex": 0,
+              "baseFret": 1,
+              "frets": [
+                0,
+                2,
+                2,
+                2,
+                0,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794981551671_l6io",
+              "linkedStep": 12,
+              "chordName": "G#",
+              "formIndex": 0,
+              "baseFret": 11,
+              "frets": [
+                11,
+                13,
+                13,
+                13,
+                11,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794981551673_h4oa",
+              "linkedStep": 14,
+              "chordName": "D",
+              "formIndex": 0,
+              "baseFret": 1,
+              "frets": [
+                2,
+                3,
+                2,
+                0,
+                "x",
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794981551677_pm1o",
+              "linkedStep": 15,
+              "chordName": "E",
+              "formIndex": 0,
+              "baseFret": 7,
+              "frets": [
+                7,
+                9,
+                9,
+                9,
+                7,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794981551678_vpo0",
+              "linkedStep": 16,
+              "chordName": "F#m",
+              "formIndex": 0,
+              "baseFret": 9,
+              "frets": [
+                9,
+                10,
+                11,
+                11,
+                9,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794981551680_ck8j",
+              "linkedStep": 17,
+              "chordName": "G#",
+              "formIndex": 0,
+              "baseFret": 11,
+              "frets": [
+                11,
+                13,
+                13,
+                13,
+                11,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794981551682_2jkj",
+              "linkedStep": 18,
+              "chordName": "A",
+              "formIndex": 0,
+              "baseFret": 1,
+              "frets": [
+                0,
+                2,
+                2,
+                2,
+                0,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794981551684_9lbq",
+              "linkedStep": 19,
+              "chordName": "B",
+              "formIndex": 0,
+              "baseFret": 2,
+              "frets": [
+                2,
+                4,
+                4,
+                4,
+                2,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794981551686_730v",
+              "linkedStep": 21,
+              "chordName": "D5/A",
+              "formIndex": 0,
+              "baseFret": 5,
+              "frets": [
+                5,
+                7,
+                7,
+                7,
+                5,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794981551690_sjlx",
+              "linkedStep": 22,
+              "chordName": "E5/B",
+              "formIndex": 0,
+              "baseFret": 7,
+              "frets": [
+                7,
+                9,
+                9,
+                9,
+                7,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794981551694_f0to",
+              "linkedStep": 23,
+              "chordName": "F#5/C#",
+              "formIndex": 0,
+              "baseFret": 9,
+              "frets": [
+                9,
+                11,
+                11,
+                11,
+                9,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            }
+          ],
+          "parts": [
+            {
+              "id": "part_1794980414342",
+              "name": "gt1",
+              "tuning": [
+                "D#",
+                "A#",
+                "F#",
+                "C#",
+                "G#",
+                "D#"
+              ],
+              "grid": {
+                "0": [
+                  "2(3)",
+                  "0",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "2(3)",
+                  "0",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "2(3)",
+                  "0",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-"
+                ],
+                "1": [
+                  "3(4)",
+                  "0",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "3(4)",
+                  "0",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "3(4)",
+                  "0",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-"
+                ],
+                "2": [
+                  "2(3)",
+                  "1(2)",
+                  "2(3)",
+                  "5(6)",
+                  "6(7)",
+                  "8(9)",
+                  "-",
+                  "2(3)",
+                  "1(2)",
+                  "2(3)",
+                  "8(9)",
+                  "6(7)",
+                  "5(6)",
+                  "-",
+                  "2(3)",
+                  "1(2)",
+                  "2(3)",
+                  "5(6)",
+                  "6(7)",
+                  "8(9)",
+                  "-",
+                  "7(8)",
+                  "9(10)",
+                  "11(12)",
+                  "-"
+                ],
+                "3": [
+                  "0",
+                  "2(3)",
+                  "4(5)",
+                  "6(7)",
+                  "7(8)",
+                  "9(10)",
+                  "-",
+                  "0",
+                  "2(3)",
+                  "4(5)",
+                  "9(10)",
+                  "7(8)",
+                  "6(7)",
+                  "-",
+                  "0",
+                  "2(3)",
+                  "4(5)",
+                  "6(7)",
+                  "7(8)",
+                  "9(10)",
+                  "-",
+                  "7(8)",
+                  "9(10)",
+                  "11(12)",
+                  "-"
+                ],
+                "4": [
+                  "-",
+                  "2(3)",
+                  "4(5)",
+                  "6(7)",
+                  "7(8)",
+                  "9(10)",
+                  "-",
+                  "-",
+                  "2(3)",
+                  "4(5)",
+                  "9(10)",
+                  "7(8)",
+                  "6(7)",
+                  "-",
+                  "-",
+                  "2(3)",
+                  "4(5)",
+                  "6(7)",
+                  "7(8)",
+                  "9(10)",
+                  "-",
+                  "5(6)",
+                  "7(8)",
+                  "9(10)",
+                  "-"
+                ],
+                "5": [
+                  "-",
+                  "0",
+                  "2(3)",
+                  "4(5)",
+                  "5(6)",
+                  "7(8)",
+                  "-",
+                  "-",
+                  "0",
+                  "2(3)",
+                  "7(8)",
+                  "5(6)",
+                  "4(5)",
+                  "-",
+                  "-",
+                  "0",
+                  "2(3)",
+                  "4(5)",
+                  "5(6)",
+                  "7(8)",
+                  "-",
+                  "5(6)",
+                  "7(8)",
+                  "9(10)",
+                  "-"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "song_1794979724723",
+      "artist": "",
+      "title": "",
+      "bpm": "120",
+      "tuning": "Standard",
+      "capo": "0",
+      "sections": [
+        {
+          "id": "sec_1794979724724",
+          "name": "Aメロ",
+          "memo": "",
+          "chords": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "chordDiagrams": [],
+          "parts": [
+            {
+              "id": "part_1794979724724",
+              "name": "gt1",
+              "tuning": [
+                "e",
+                "B",
+                "G",
+                "D",
+                "A",
+                "E"
+              ],
+              "grid": {
+                "0": [
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-"
+                ],
+                "1": [
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-"
+                ],
+                "2": [
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-"
+                ],
+                "3": [
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-"
+                ],
+                "4": [
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-"
+                ],
+                "5": [
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "song_1792310215404",
       "artist": "the GazettE",
       "title": "歪",
@@ -22,6 +968,7 @@
             "",
             ""
           ],
+          "chordDiagrams": [],
           "parts": [
             {
               "id": "part_1792310215406",
@@ -91,6 +1038,7 @@
             "",
             ""
           ],
+          "chordDiagrams": [],
           "parts": [
             {
               "id": "part_1792310315096",
@@ -160,6 +1108,7 @@
             "",
             ""
           ],
+          "chordDiagrams": [],
           "parts": [
             {
               "id": "part_1792310356401",
@@ -234,6 +1183,7 @@
             "",
             ""
           ],
+          "chordDiagrams": [],
           "parts": [
             {
               "id": "part_1792310419834",
@@ -323,6 +1273,7 @@
             "",
             ""
           ],
+          "chordDiagrams": [],
           "parts": [
             {
               "id": "part_1792310592279",
@@ -392,6 +1343,7 @@
             "",
             ""
           ],
+          "chordDiagrams": [],
           "parts": [
             {
               "id": "part_1792310690446",
@@ -1183,7 +2135,7 @@
       "id": "song_1792308348731",
       "artist": "the GazettE",
       "title": "vortex",
-      "bpm": "120",
+      "bpm": "140",
       "tuning": "Standard",
       "capo": "0",
       "sections": [
@@ -1928,7 +2880,7 @@
       "id": "song_1792220183308",
       "artist": "the GazettE",
       "title": "飼育された春",
-      "bpm": "120",
+      "bpm": "110",
       "tuning": "Standard",
       "capo": "0",
       "sections": [
@@ -2969,6 +3921,54 @@
             "",
             ""
           ],
+          "chordDiagrams": [
+            {
+              "id": "diag_1794979741637_y3ta",
+              "linkedStep": 0,
+              "chordName": "Gmaj7",
+              "formIndex": 0,
+              "baseFret": 1,
+              "frets": [
+                2,
+                0,
+                0,
+                0,
+                2,
+                3
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                true,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794979741637_r42s",
+              "linkedStep": 1,
+              "chordName": "Bm7",
+              "formIndex": 0,
+              "baseFret": 2,
+              "frets": [
+                2,
+                3,
+                2,
+                4,
+                2,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            }
+          ],
           "parts": [
             {
               "id": "part_1791950902248",
@@ -3066,6 +4066,307 @@
             "F#/C#",
             "",
             ""
+          ],
+          "chordDiagrams": [
+            {
+              "id": "diag_1794979741639_laki",
+              "linkedStep": 0,
+              "chordName": "G",
+              "formIndex": 0,
+              "baseFret": 1,
+              "frets": [
+                3,
+                0,
+                0,
+                0,
+                2,
+                3
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794979741639_jvch",
+              "linkedStep": 1,
+              "chordName": "A",
+              "formIndex": 0,
+              "baseFret": 1,
+              "frets": [
+                0,
+                2,
+                2,
+                2,
+                0,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794979741639_vqnl",
+              "linkedStep": 2,
+              "chordName": "Bm",
+              "formIndex": 0,
+              "baseFret": 2,
+              "frets": [
+                2,
+                3,
+                4,
+                4,
+                2,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794979741639_vxrm",
+              "linkedStep": 3,
+              "chordName": "G",
+              "formIndex": 0,
+              "baseFret": 1,
+              "frets": [
+                3,
+                0,
+                0,
+                0,
+                2,
+                3
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794979741639_ouyq",
+              "linkedStep": 4,
+              "chordName": "A",
+              "formIndex": 0,
+              "baseFret": 1,
+              "frets": [
+                0,
+                2,
+                2,
+                2,
+                0,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794979741639_0mo8",
+              "linkedStep": 5,
+              "chordName": "Bm",
+              "formIndex": 0,
+              "baseFret": 2,
+              "frets": [
+                2,
+                3,
+                4,
+                4,
+                2,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794979741639_wpcs",
+              "linkedStep": 6,
+              "chordName": "G",
+              "formIndex": 0,
+              "baseFret": 1,
+              "frets": [
+                3,
+                0,
+                0,
+                0,
+                2,
+                3
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794979741639_z8pr",
+              "linkedStep": 7,
+              "chordName": "A",
+              "formIndex": 0,
+              "baseFret": 1,
+              "frets": [
+                0,
+                2,
+                2,
+                2,
+                0,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794979741639_2dlx",
+              "linkedStep": 8,
+              "chordName": "D/F#",
+              "formIndex": 0,
+              "baseFret": 1,
+              "frets": [
+                2,
+                3,
+                2,
+                0,
+                "x",
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794979741639_55jt",
+              "linkedStep": 9,
+              "chordName": "F#/C#",
+              "formIndex": 0,
+              "baseFret": 9,
+              "frets": [
+                9,
+                11,
+                11,
+                11,
+                9,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794979741639_4ga8",
+              "linkedStep": 10,
+              "chordName": "G",
+              "formIndex": 0,
+              "baseFret": 1,
+              "frets": [
+                3,
+                0,
+                0,
+                0,
+                2,
+                3
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794979741639_s0os",
+              "linkedStep": 11,
+              "chordName": "A",
+              "formIndex": 0,
+              "baseFret": 1,
+              "frets": [
+                0,
+                2,
+                2,
+                2,
+                0,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794979741639_rv77",
+              "linkedStep": 12,
+              "chordName": "F#/C#",
+              "formIndex": 0,
+              "baseFret": 9,
+              "frets": [
+                9,
+                11,
+                11,
+                11,
+                9,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            }
           ],
           "parts": [
             {
@@ -3212,6 +4513,399 @@
             "A",
             "Bm",
             ""
+          ],
+          "chordDiagrams": [
+            {
+              "id": "diag_1794979741643_r1u0",
+              "linkedStep": 0,
+              "chordName": "Bm",
+              "formIndex": 0,
+              "baseFret": 2,
+              "frets": [
+                2,
+                3,
+                4,
+                4,
+                2,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794979741643_hxma",
+              "linkedStep": 1,
+              "chordName": "G",
+              "formIndex": 0,
+              "baseFret": 1,
+              "frets": [
+                3,
+                0,
+                0,
+                0,
+                2,
+                3
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794979741643_eyvf",
+              "linkedStep": 2,
+              "chordName": "A",
+              "formIndex": 0,
+              "baseFret": 1,
+              "frets": [
+                0,
+                2,
+                2,
+                2,
+                0,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794979741643_gsb5",
+              "linkedStep": 3,
+              "chordName": "F#",
+              "formIndex": 0,
+              "baseFret": 9,
+              "frets": [
+                9,
+                11,
+                11,
+                11,
+                9,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794979741643_vc7w",
+              "linkedStep": 4,
+              "chordName": "Bm",
+              "formIndex": 0,
+              "baseFret": 2,
+              "frets": [
+                2,
+                3,
+                4,
+                4,
+                2,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794979741643_9jjx",
+              "linkedStep": 6,
+              "chordName": "Bm",
+              "formIndex": 0,
+              "baseFret": 2,
+              "frets": [
+                2,
+                3,
+                4,
+                4,
+                2,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794979741643_ydlr",
+              "linkedStep": 7,
+              "chordName": "G",
+              "formIndex": 0,
+              "baseFret": 1,
+              "frets": [
+                3,
+                0,
+                0,
+                0,
+                2,
+                3
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794979741643_v0y1",
+              "linkedStep": 8,
+              "chordName": "A",
+              "formIndex": 0,
+              "baseFret": 1,
+              "frets": [
+                0,
+                2,
+                2,
+                2,
+                0,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794979741643_ze1b",
+              "linkedStep": 9,
+              "chordName": "Bm",
+              "formIndex": 0,
+              "baseFret": 2,
+              "frets": [
+                2,
+                3,
+                4,
+                4,
+                2,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794979741643_5byl",
+              "linkedStep": 10,
+              "chordName": "F#",
+              "formIndex": 0,
+              "baseFret": 9,
+              "frets": [
+                9,
+                11,
+                11,
+                11,
+                9,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794979741643_62gr",
+              "linkedStep": 12,
+              "chordName": "Bm",
+              "formIndex": 0,
+              "baseFret": 2,
+              "frets": [
+                2,
+                3,
+                4,
+                4,
+                2,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794979741643_jrlu",
+              "linkedStep": 13,
+              "chordName": "G",
+              "formIndex": 0,
+              "baseFret": 1,
+              "frets": [
+                3,
+                0,
+                0,
+                0,
+                2,
+                3
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794979741643_t03l",
+              "linkedStep": 14,
+              "chordName": "A",
+              "formIndex": 0,
+              "baseFret": 1,
+              "frets": [
+                0,
+                2,
+                2,
+                2,
+                0,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794979741643_4zwm",
+              "linkedStep": 15,
+              "chordName": "D/F#",
+              "formIndex": 0,
+              "baseFret": 1,
+              "frets": [
+                2,
+                3,
+                2,
+                0,
+                "x",
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794979741643_hci7",
+              "linkedStep": 17,
+              "chordName": "G",
+              "formIndex": 0,
+              "baseFret": 1,
+              "frets": [
+                3,
+                0,
+                0,
+                0,
+                2,
+                3
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794979741643_5bq5",
+              "linkedStep": 18,
+              "chordName": "A",
+              "formIndex": 0,
+              "baseFret": 1,
+              "frets": [
+                0,
+                2,
+                2,
+                2,
+                0,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1794979741643_l600",
+              "linkedStep": 19,
+              "chordName": "Bm",
+              "formIndex": 0,
+              "baseFret": 2,
+              "frets": [
+                2,
+                3,
+                4,
+                4,
+                2,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            }
           ],
           "parts": [
             {
@@ -3382,6 +5076,7 @@
             "",
             ""
           ],
+          "chordDiagrams": [],
           "parts": [
             {
               "id": "part_1791961722958",
