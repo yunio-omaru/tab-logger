@@ -1647,6 +1647,78 @@
               ]
             },
             {
+              "id": "diag_1795694203361_h85w",
+              "linkedStep": 0,
+              "chordName": "Em7",
+              "formIndex": 1,
+              "baseFret": 1,
+              "frets": [
+                3,
+                null,
+                null,
+                null,
+                null,
+                null
+              ],
+              "customEdited": [
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "isClone": true
+            },
+            {
+              "id": "diag_1795694202310_77mf",
+              "linkedStep": 0,
+              "chordName": "Em7",
+              "formIndex": 1,
+              "baseFret": 1,
+              "frets": [
+                2,
+                null,
+                null,
+                null,
+                null,
+                null
+              ],
+              "customEdited": [
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "isClone": true
+            },
+            {
+              "id": "diag_1795694205234_95xx",
+              "linkedStep": 0,
+              "chordName": "Em7",
+              "formIndex": 1,
+              "baseFret": 1,
+              "frets": [
+                null,
+                3,
+                null,
+                null,
+                null,
+                null
+              ],
+              "customEdited": [
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
+              ],
+              "isClone": true
+            },
+            {
               "id": "diag_1795688978046_708s",
               "linkedStep": 1,
               "chordName": "CM7",
