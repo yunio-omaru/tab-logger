@@ -1,6 +1,638 @@
 {
   "songs": [
     {
+      "id": "song_1795686520970",
+      "artist": "",
+      "title": "heven's drive",
+      "bpm": "125",
+      "tuning": "Standard",
+      "capo": "0",
+      "sections": [
+        {
+          "id": "sec_1795686520970",
+          "name": "Aメロ",
+          "memo": "",
+          "chords": [
+            "Dm",
+            "Am",
+            "Gm",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "chordDiagrams": [
+            {
+              "id": "diag_1795686611411_gimb",
+              "linkedStep": 0,
+              "chordName": "Dm",
+              "formIndex": 1,
+              "baseFret": 5,
+              "frets": [
+                5,
+                6,
+                7,
+                7,
+                5,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1795686611412_dshp",
+              "linkedStep": 1,
+              "chordName": "Am",
+              "formIndex": 1,
+              "baseFret": 5,
+              "frets": [
+                5,
+                5,
+                5,
+                7,
+                7,
+                5
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1795686611413_wbet",
+              "linkedStep": 2,
+              "chordName": "Gm",
+              "formIndex": 1,
+              "baseFret": 3,
+              "frets": [
+                3,
+                3,
+                3,
+                5,
+                5,
+                3
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            }
+          ],
+          "parts": [
+            {
+              "id": "part_1795686520970",
+              "name": "gt1",
+              "tuning": [
+                "e",
+                "B",
+                "G",
+                "D",
+                "A",
+                "E"
+              ],
+              "grid": {
+                "0": [
+                  "5",
+                  "5",
+                  "3",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-"
+                ],
+                "1": [
+                  "6",
+                  "5",
+                  "3",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-"
+                ],
+                "2": [
+                  "7",
+                  "5",
+                  "3",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-"
+                ],
+                "3": [
+                  "7",
+                  "7",
+                  "5",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-"
+                ],
+                "4": [
+                  "5",
+                  "7",
+                  "5",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-"
+                ],
+                "5": [
+                  "-",
+                  "5",
+                  "3",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "sec_1795686696927",
+          "name": "B(build up)",
+          "memo": "",
+          "chords": [
+            "A#",
+            "A#5/F",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "chordDiagrams": [
+            {
+              "id": "diag_1795686767222_bxdh",
+              "linkedStep": 0,
+              "chordName": "A#",
+              "formIndex": 0,
+              "baseFret": 1,
+              "frets": [
+                1,
+                3,
+                3,
+                3,
+                1,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1795687051735_pl35",
+              "linkedStep": 1,
+              "chordName": "A#5/F",
+              "formIndex": 1,
+              "baseFret": 6,
+              "frets": [
+                null,
+                null,
+                9,
+                8,
+                8,
+                null
+              ],
+              "customEdited": [
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
+              ]
+            }
+          ],
+          "parts": [
+            {
+              "id": "part_1795686696927",
+              "name": "gt1",
+              "tuning": [
+                "e",
+                "B",
+                "G",
+                "D",
+                "A",
+                "E"
+              ],
+              "grid": {
+                "0": [
+                  "6",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-"
+                ],
+                "1": [
+                  "6",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-"
+                ],
+                "2": [
+                  "7",
+                  "10",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-"
+                ],
+                "3": [
+                  "8",
+                  "8",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-"
+                ],
+                "4": [
+                  "8",
+                  "8",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-"
+                ],
+                "5": [
+                  "6",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-",
+                  "-"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "sec_1795687128613",
+          "name": "新規セクション",
+          "memo": "",
+          "chords": [
+            "D#m",
+            "G#",
+            "C#",
+            "F#",
+            "",
+            "D#m",
+            "G#",
+            "C#",
+            "A#",
+            "A#5/F",
+            ""
+          ],
+          "chordDiagrams": [
+            {
+              "id": "diag_1795687293545_rc37",
+              "linkedStep": 0,
+              "chordName": "D#m",
+              "formIndex": 0,
+              "baseFret": 6,
+              "frets": [
+                6,
+                7,
+                8,
+                8,
+                6,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1795687293545_maft",
+              "linkedStep": 1,
+              "chordName": "G#",
+              "formIndex": 1,
+              "baseFret": 4,
+              "frets": [
+                4,
+                4,
+                5,
+                6,
+                6,
+                4
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1795687293546_aa5o",
+              "linkedStep": 2,
+              "chordName": "C#",
+              "formIndex": 0,
+              "baseFret": 4,
+              "frets": [
+                4,
+                6,
+                6,
+                6,
+                4,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1795687293546_o5hd",
+              "linkedStep": 3,
+              "chordName": "F#",
+              "formIndex": 1,
+              "baseFret": 2,
+              "frets": [
+                2,
+                2,
+                3,
+                4,
+                4,
+                2
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1795687396103_tewe",
+              "linkedStep": 5,
+              "chordName": "D#m",
+              "formIndex": 0,
+              "baseFret": 6,
+              "frets": [
+                6,
+                7,
+                8,
+                8,
+                6,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1795687396104_ymhx",
+              "linkedStep": 6,
+              "chordName": "G#",
+              "formIndex": 1,
+              "baseFret": 4,
+              "frets": [
+                4,
+                4,
+                5,
+                6,
+                6,
+                4
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1795687396104_gw55",
+              "linkedStep": 7,
+              "chordName": "C#",
+              "formIndex": 0,
+              "baseFret": 4,
+              "frets": [
+                4,
+                6,
+                6,
+                6,
+                4,
+                "x"
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1795687396105_wisx",
+              "linkedStep": 8,
+              "chordName": "A#",
+              "formIndex": 1,
+              "baseFret": 6,
+              "frets": [
+                6,
+                6,
+                7,
+                8,
+                8,
+                6
+              ],
+              "customEdited": [
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+              ]
+            },
+            {
+              "id": "diag_1795687396106_okcn",
+              "linkedStep": 9,
+              "chordName": "A#5/F",
+              "formIndex": 1,
+              "baseFret": 6,
+              "frets": [
+                null,
+                null,
+                10,
+                8,
+                8,
+                null
+              ],
+              "customEdited": [
+                true,
+                true,
+                true,
+                false,
+                false,
+                true
+              ]
+            }
+          ],
+          "parts": [
+            {
+              "id": "part_1795687128613",
+              "name": "gt1",
+              "tuning": [
+                "e",
+                "B",
+                "G",
+                "D",
+                "A",
+                "E"
+              ],
+              "grid": {
+                "0": [
+                  "6",
+                  "4",
+                  "4",
+                  "2",
+                  "-",
+                  "6",
+                  "4",
+                  "4",
+                  "6",
+                  "-",
+                  "-"
+                ],
+                "1": [
+                  "7",
+                  "4",
+                  "6",
+                  "2",
+                  "-",
+                  "7",
+                  "4",
+                  "6",
+                  "6",
+                  "-",
+                  "-"
+                ],
+                "2": [
+                  "8",
+                  "5",
+                  "6",
+                  "3",
+                  "-",
+                  "8",
+                  "5",
+                  "6",
+                  "7",
+                  "10",
+                  "-"
+                ],
+                "3": [
+                  "8",
+                  "6",
+                  "6",
+                  "4",
+                  "-",
+                  "8",
+                  "6",
+                  "6",
+                  "8",
+                  "8",
+                  "-"
+                ],
+                "4": [
+                  "6",
+                  "6",
+                  "4",
+                  "4",
+                  "-",
+                  "6",
+                  "6",
+                  "4",
+                  "8",
+                  "8",
+                  "-"
+                ],
+                "5": [
+                  "-",
+                  "4",
+                  "-",
+                  "2",
+                  "-",
+                  "-",
+                  "4",
+                  "-",
+                  "6",
+                  "-",
+                  "-"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "song_1795677600647",
       "artist": "",
       "title": "丸の内ミゼラブル",
@@ -102,7 +734,7 @@
         },
         {
           "id": "sec_1795677650286",
-          "name": "",
+          "name": "新規セクション",
           "memo": "",
           "chords": [
             "",
@@ -3801,7 +4433,7 @@
     {
       "id": "song_1794979788875",
       "artist": "KAT-TUN",
-      "title": "keep the faith",
+      "title": "keepthefaith",
       "bpm": "120",
       "tuning": "Standard",
       "capo": "1",
@@ -4794,7 +5426,7 @@
     },
     {
       "id": "song_1792310215404",
-      "artist": "the GazettE",
+      "artist": "theGazettE",
       "title": "歪",
       "bpm": "120",
       "tuning": "Standard",
@@ -5249,7 +5881,7 @@
     },
     {
       "id": "song_1792309787759",
-      "artist": "the GazettE",
+      "artist": "theGazettE",
       "title": "ugly",
       "bpm": "120",
       "tuning": "Standard",
@@ -5604,7 +6236,7 @@
     },
     {
       "id": "song_1792309392818",
-      "artist": "the GazettE",
+      "artist": "theGazettE",
       "title": "leech",
       "bpm": "120",
       "tuning": "Standard",
@@ -5979,7 +6611,7 @@
     },
     {
       "id": "song_1792308348731",
-      "artist": "the GazettE",
+      "artist": "theGazettE",
       "title": "vortex",
       "bpm": "140",
       "tuning": "Standard",
@@ -6724,7 +7356,7 @@
     },
     {
       "id": "song_1792220183308",
-      "artist": "the GazettE",
+      "artist": "theGazettE",
       "title": "飼育された春",
       "bpm": "110",
       "tuning": "Standard",
