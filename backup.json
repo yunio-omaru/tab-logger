@@ -493,54 +493,6 @@
               "isClone": true
             },
             {
-              "id": "diag_1795690366198_heqh",
-              "linkedStep": 5,
-              "chordName": "Bm7",
-              "formIndex": 1,
-              "baseFret": 7,
-              "frets": [
-                7,
-                7,
-                7,
-                7,
-                9,
-                7
-              ],
-              "customEdited": [
-                false,
-                false,
-                false,
-                false,
-                false,
-                false
-              ],
-              "isClone": true
-            },
-            {
-              "id": "diag_1795690364222_4ir9",
-              "linkedStep": 5,
-              "chordName": "Em7",
-              "formIndex": 0,
-              "baseFret": 7,
-              "frets": [
-                7,
-                8,
-                7,
-                9,
-                7,
-                "x"
-              ],
-              "customEdited": [
-                false,
-                false,
-                false,
-                false,
-                false,
-                false
-              ],
-              "isClone": true
-            },
-            {
               "id": "diag_1795688576492_vpir",
               "linkedStep": 6,
               "chordName": "C",
@@ -593,7 +545,7 @@
               "formIndex": 0,
               "baseFret": 3,
               "frets": [
-                5,
+                7,
                 5,
                 5,
                 5,
@@ -608,6 +560,30 @@
                 true,
                 false
               ]
+            },
+            {
+              "id": "diag_1795693675456_qxxa",
+              "linkedStep": null,
+              "chordName": "",
+              "formIndex": 0,
+              "baseFret": 3,
+              "frets": [
+                5,
+                5,
+                5,
+                5,
+                5,
+                null
+              ],
+              "customEdited": [
+                true,
+                true,
+                true,
+                true,
+                true,
+                false
+              ],
+              "isClone": true
             }
           ],
           "parts": [
