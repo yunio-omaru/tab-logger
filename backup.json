@@ -866,7 +866,7 @@
                 0,
                 0,
                 2,
-                0
+                null
               ],
               "customEdited": [
                 false,
@@ -874,7 +874,7 @@
                 false,
                 false,
                 false,
-                false
+                true
               ]
             },
             {
@@ -889,7 +889,7 @@
                 0,
                 0,
                 2,
-                0
+                null
               ],
               "customEdited": [
                 true,
@@ -897,7 +897,7 @@
                 false,
                 false,
                 false,
-                false
+                true
               ],
               "isClone": true
             },
@@ -911,7 +911,7 @@
                 2,
                 0,
                 0,
-                0,
+                2,
                 2,
                 0
               ],
@@ -919,7 +919,7 @@
                 true,
                 false,
                 false,
-                false,
+                true,
                 false,
                 false
               ],
@@ -935,7 +935,7 @@
                 3,
                 0,
                 0,
-                0,
+                2,
                 2,
                 0
               ],
@@ -943,7 +943,7 @@
                 true,
                 false,
                 false,
-                false,
+                true,
                 false,
                 false
               ],
