@@ -1935,6 +1935,29 @@
               "linkedStep": 8,
               "chordName": "Em7",
               "formIndex": 0,
+              "baseFret": 9,
+              "frets": [
+                12,
+                10,
+                9,
+                9,
+                null,
+                "x"
+              ],
+              "customEdited": [
+                true,
+                true,
+                true,
+                true,
+                true,
+                false
+              ]
+            },
+            {
+              "id": "diag_1795694372563_84cw",
+              "linkedStep": 8,
+              "chordName": "Em7",
+              "formIndex": 0,
               "baseFret": 11,
               "frets": [
                 14,
@@ -1951,7 +1974,8 @@
                 true,
                 true,
                 false
-              ]
+              ],
+              "isClone": true
             },
             {
               "id": "diag_1795689167721_8mem",
